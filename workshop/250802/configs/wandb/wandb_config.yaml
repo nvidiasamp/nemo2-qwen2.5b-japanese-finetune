@@ -1,0 +1,22 @@
+# WandB配置模板
+# 团队信息
+entity: "your-team"
+
+# 项目名称
+projects:
+  continual: "qwen25-japanese-continual"
+  peft: "qwen25-japanese-peft"
+  demo: "qwen25-demo-live"
+
+# 通用标签
+common_tags:
+  - "nemo2.0"
+  - "qwen2.5-0.5b"
+  - "japanese"
+  - "workshop"
+
+# 环境信息
+environment:
+  gpu: "RTX_6000_Ada"
+  container: "nemo:25.04"
+  python: "3.10"

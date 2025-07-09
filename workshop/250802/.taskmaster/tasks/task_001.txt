@@ -1,0 +1,20 @@
+# Task ID: 1
+# Title: 环境设置与项目初始化
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: 验证NVIDIA NeMo 25.04 Docker容器环境，安装nemo-run等必要依赖，并初始化WandB项目用于团队协作和实验监控。
+# Details:
+1. 启动NeMo容器: `docker run --gpus all -it --rm -v .:/workspace nvcr.io/nvidia/nemo:25.04`
+2. 在容器内安装依赖: `pip install nemo-run wandb`
+3. 登录WandB: `wandb login [YOUR_API_KEY]`
+4. 初始化WandB项目: 在WandB界面创建名为 `qwen25-japanese-continual` 和 `qwen25-japanese-peft` 的项目，并设置团队实体为 `your-team`。
+5. 创建项目目录结构:
+/workspace
+  - /data
+  - /models
+  - /scripts
+  - /logs
+
+# Test Strategy:
+成功启动容器，`import nemo_run` 和 `import wandb` 不报错。WandB网站上能看到新建的项目。

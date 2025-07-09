@@ -1,0 +1,52 @@
+# Task ID: 5
+# Title: 数据二值化以适配NeMo训练
+# Status: pending
+# Dependencies: 2, 4
+# Priority: high
+# Description: 将NeMo Curator处理后的Parquet数据转换为NeMo框架训练所需的标准二进制格式（.bin和.idx文件）。
+# Details:
+创建脚本 `scripts/02c_binarize_data.py`。
+使用 `nemo.collections.nlp.data.language_modeling.preprocess_data_for_megatron` 模块。
+需要Qwen2.5的tokenizer配置文件路径，该文件应在模型导入（任务2）后可用。
+```python
+# scripts/02c_binarize_data.py
+from nemo.collections.nlp.data.language_modeling.preprocess_data_for_megatron import main as preprocess_main
+
+# 假设tokenizer文件在导入的模型目录中
+tokenizer_path = './models/qwen25_0.5b.nemo' # NeMo 2.0可以直接引用.nemo文件作为tokenizer
+
+preprocess_args = [
+    '--input', './data/llm_jp_wiki/nemo_format',
+    '--output-prefix', './data/llm_jp_wiki/nemo_binary/ja_wiki',
+    '--tokenizer-model', tokenizer_path,
+    '--dataset-impl', 'mmap',
+    '--tokenizer-type', 'HuggingFaceTokenizer',
+    '--workers', '4',
+    '--split-sentences'
+]
+# 使用subprocess或直接调用main
+# preprocess_main(preprocess_args)
+```
+
+# Test Strategy:
+脚本执行成功，在 `./data/llm_jp_wiki/nemo_binary/` 目录下生成 `ja_wiki_text_document.bin` 和 `ja_wiki_text_document.idx` 等文件。
+
+# Subtasks:
+## 1. 配置tokenizer与输入输出路径 [pending]
+### Dependencies: None
+### Description: 根据项目需求，正确配置所需的tokenizer，并设置数据二值化脚本的输入和输出文件路径，确保后续流程能够顺利读取和保存数据。
+### Details:
+包括选择合适的tokenizer模型、安装相关依赖、检查tokenizer参数设置，以及明确原始数据文件和目标二值化文件（如.bin和.idx）的存放路径。
+
+## 2. 编写并运行二值化脚本 [pending]
+### Dependencies: 5.1
+### Description: 根据配置，编写实现数据二值化的脚本，并在本地或服务器环境中运行，生成二值化后的数据文件。
+### Details:
+脚本需实现数据读取、tokenizer处理、二值化转换及输出保存，运行过程中需关注日志输出，及时排查和修正可能出现的错误。
+
+## 3. 验证生成的.bin和.idx文件 [pending]
+### Dependencies: 5.2
+### Description: 对生成的二值化数据文件（.bin和.idx）进行完整性和可用性验证，确保文件内容符合预期标准。
+### Details:
+包括文件大小、内容格式、数据一致性检查，可通过脚本读取部分内容或配套工具进行解析，确保后续流程能够正确使用这些文件。
+

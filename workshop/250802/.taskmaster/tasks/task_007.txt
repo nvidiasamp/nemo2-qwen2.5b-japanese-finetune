@@ -1,0 +1,31 @@
+# Task ID: 7
+# Title: 集成WandB到继续学习流程
+# Status: pending
+# Dependencies: 6
+# Priority: medium
+# Description: 将WandB监控功能集成到继续学习训练脚本中，以便实时跟踪损失、学习率和GPU利用率等关键指标。
+# Details:
+修改 `scripts/03_run_continual_learning.py`。
+```python
+# ... imports ...
+from lightning.pytorch.loggers import WandbLogger
+
+def setup_continual_training_with_wandb():
+    # ... (recipe 定义) ...
+    wandb_logger = WandbLogger(
+        project="qwen25-japanese-continual",
+        name="continual-learning-phase",
+        entity="your-team",
+        tags=["continual-learning", "qwen2.5-0.5b"]
+    )
+    recipe.trainer.logger = wandb_logger
+    recipe.trainer.log_every_n_steps = 10
+    return recipe
+
+if __name__ == "__main__":
+    recipe = setup_continual_training_with_wandb()
+    run.run(recipe, executor=run.LocalExecutor())
+```
+
+# Test Strategy:
+运行训练脚本后，在WandB对应的项目页面能看到一个新的run，并且loss等指标被实时记录。

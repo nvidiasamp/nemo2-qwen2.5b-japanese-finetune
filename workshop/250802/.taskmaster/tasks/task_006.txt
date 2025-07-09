@@ -1,0 +1,36 @@
+# Task ID: 6
+# Title: 构建继续学习训练脚本
+# Status: pending
+# Dependencies: 2, 5
+# Priority: high
+# Description: 基于NeMo 2.0的recipe系统，编写日语继续学习的训练脚本。该脚本使用`llm.qwen25_500m.pretrain_recipe`，并配置处理好的日语数据集。
+# Details:
+创建脚本 `scripts/03_run_continual_learning.py`。
+```python
+# scripts/03_run_continual_learning.py
+import nemo_run as run
+from nemo.collections import llm
+
+def setup_continual_training():
+    recipe = llm.qwen25_500m.pretrain_recipe(
+        dir="./models/checkpoints/qwen25_continual",
+        name="japanese_continual_learning"
+    )
+    recipe.model.restore_from_path = './models/qwen25_0.5b.nemo' # 从导入的模型开始
+    recipe.data = run.Config(
+        llm.PreTrainingDataModule,
+        paths=['./data/llm_jp_wiki/nemo_binary/ja_wiki_text_document'],
+        seq_length=2048,
+        micro_batch_size=4,
+        global_batch_size=64
+    )
+    recipe.trainer.max_steps = 1000
+    return recipe
+
+if __name__ == "__main__":
+    recipe = setup_continual_training()
+    # run.run(recipe, executor=run.LocalExecutor()) # 暂时注释，待WandB集成后执行
+```
+
+# Test Strategy:
+脚本可以无报错地初始化recipe对象。配置的数据路径、模型路径和超参数正确无误。

@@ -1,0 +1,60 @@
+# Task ID: 12
+# Title: 开发模型推理与评估脚本
+# Status: pending
+# Dependencies: 11
+# Priority: high
+# Description: 开发一个推理脚本，用于加载经过LoRA微调的模型，并对给定的日语提示词生成文本。该脚本将作为最终演示的基础。
+# Details:
+创建脚本 `scripts/05_run_inference.py`。
+```python
+# scripts/05_run_inference.py
+import torch
+import nemo.lightning as nl
+from nemo.collections.llm import api
+
+def setup_inference_trainer():
+    strategy = nl.MegatronStrategy(context_parallel_size=1)
+    return nl.Trainer(accelerator="gpu", devices=1, strategy=strategy)
+
+if __name__ == "__main__":
+    trainer = setup_inference_trainer()
+    peft_model_path = './models/checkpoints/qwen25_peft/checkpoints/last.nemo'
+    prompts = ["日本の美しい季節について教えてください。", "人工知能の未来はどうなると思いますか？"]
+    
+    results = api.generate(
+        path=peft_model_path,
+        prompts=prompts,
+        trainer=trainer,
+        text_only=True
+    )
+    print(results)
+```
+
+# Test Strategy:
+脚本成功加载模型并对给定的日语提示词生成了连贯的文本。输出结果符合预期。
+
+# Subtasks:
+## 1. 配置推理环境与依赖 [pending]
+### Dependencies: None
+### Description: 搭建并配置所需的推理环境，安装相关依赖库和工具，确保脚本开发和模型推理能够顺利进行。
+### Details:
+包括Python环境、深度学习框架（如PyTorch、TensorFlow）、推理相关库（如ONNXRuntime）等的安装与配置。
+
+## 2. 编写加载与推理代码 [pending]
+### Dependencies: 12.1
+### Description: 开发脚本，实现模型的加载、输入数据的预处理、推理执行及输出的后处理。
+### Details:
+根据模型类型编写加载模型、数据预处理、推理执行和结果后处理的代码，确保推理流程完整且高效。
+
+## 3. 设计评估用例 [pending]
+### Dependencies: 12.2
+### Description: 制定用于评估推理脚本准确性和鲁棒性的测试用例，覆盖常见和边界场景。
+### Details:
+包括输入样本的准备、预期输出的设定，以及评估指标的确定，确保评估全面。
+
+## 4. 验证输出文本质量 [pending]
+### Dependencies: 12.3
+### Description: 对推理脚本输出的文本进行质量验证，评估其准确性、相关性和可读性。
+### Details:
+采用人工或自动化方法对输出文本进行分析，依据预设标准判断输出质量，必要时进行脚本优化。
+
