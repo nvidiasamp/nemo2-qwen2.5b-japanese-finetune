@@ -127,4 +127,16 @@ yarn-error.log*
 *.mkv
 *.mp3
 *.wav
-*.flac 
+*.flac
+
+# Project directories with nested git repos
+ACE/
+AI/
+AIME/
+MTG_ambassador/
+MinerU/
+Model_Management/
+f5-tts/
+kaggle/
+model/
+ops-logbook/ 
