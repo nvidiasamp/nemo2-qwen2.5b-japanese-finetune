@@ -35,4 +35,4 @@ case $choice in
         ;;
 esac
 
-echo "✅ Training command has been launched!" 
+echo "✅ Training command has been launched!"
