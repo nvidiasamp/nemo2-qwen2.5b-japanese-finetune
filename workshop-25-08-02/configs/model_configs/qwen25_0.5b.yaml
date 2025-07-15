@@ -1,0 +1,54 @@
+# NeMo 2.0 Qwen2.5-0.5B Model Configuration
+# 使用直接的HuggingFace模型ID（现代化做法）
+
+model:
+  name: "qwen25_0.5b"
+  type: "Qwen2Model"
+  config: "Qwen25Config500M"
+  
+  # 模型规格
+  hidden_size: 896
+  num_layers: 24
+  num_attention_heads: 14
+  vocab_size: 151936
+  seq_length: 32768
+  
+  # 直接使用HF模型ID (现代化做法 - 无需本地转换)
+  model_id: "hf://Qwen/Qwen2.5-0.5B"
+  
+  # 训练/推理配置中的路径设置
+  restore_config:
+    path: "hf://Qwen/Qwen2.5-0.5B"
+    
+  # 文件结构（仅供参考，实际从HF自动解析）
+  structure:
+    context_dir: "context/"
+    weights_dir: "weights/"
+    tokenizer_dir: "context/nemo_tokenizer/"
+    
+training:
+  # 训练相关配置
+  global_batch_size: 64
+  micro_batch_size: 4
+  seq_length: 2048
+  
+  # 优化器配置
+  learning_rate: 1e-4
+  weight_decay: 0.01
+  
+  # 训练策略
+  precision: "bf16-mixed"
+  gradient_clipping: 1.0
+  
+  # 模型配置
+  resume:
+    restore_config:
+      path: "hf://Qwen/Qwen2.5-0.5B"  # 直接使用HF模型ID
+
+# 优势说明
+advantages:
+  - "节省本地存储空间（2.4GB）"
+  - "自动获取最新模型版本"
+  - "简化部署流程"
+  - "减少维护成本"
+  - "符合现代ML框架做法" 
