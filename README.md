@@ -6,7 +6,8 @@ NeMo 2.0を使用してQwen2.5モデルの日本語ファインチューニン�
 
 - [概要](#概要)
 - [環境要件](#環境要件)
-- [インストール](#インストール)
+- [Docker環境のセットアップ](#docker環境のセットアップ)
+- [追加パッケージのインストール](#追加パッケージのインストール)
 - [データ準備](#データ準備)
 - [使用方法](#使用方法)
 - [プロジェクト構成](#プロジェクト構成)
@@ -25,21 +26,86 @@ NeMo 2.0を使用してQwen2.5モデルの日本語ファインチューニン�
 
 ## 🔧 環境要件
 
-- Python 3.8+
+- NVIDIA GPUドライバー（推奨: 最新版）
+- Docker & NVIDIA Container Toolkit
 - CUDA対応GPU（推奨: 16GB+ VRAM）
-- NeMo 2.0
-- PyTorch
-- HuggingFace Transformers
+- 十分なディスク容量（50GB+推奨）
 
-## 📦 インストール
+## 🐳 Docker環境のセットアップ
+
+### 1. NVIDIA Container Toolkitのインストール
 
 ```bash
-# NeMo 2.0のインストール
-pip install nemo_toolkit[all]
+# Ubuntu/Debian の場合
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
+    && curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - \
+    && curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 
-# 必要な依存関係
-pip install torch torchvision torchaudio
-pip install transformers datasets
+sudo apt-get update
+sudo apt-get install -y nvidia-docker2
+sudo systemctl restart docker
+```
+
+### 2. NeMo 2.0 Dockerイメージのダウンロード
+
+[NGC Catalog](https://catalog.ngc.nvidia.com/?filters=&orderBy=weightPopularDESC&query=&page=&pageSize=)からNeMo 2.0の公式Dockerイメージを使用します。
+
+```bash
+# NeMo 2.0 Docker imageのプル
+docker pull nvcr.io/nvidia/nemo:25.04
+```
+
+### 3. Dockerコンテナの起動
+
+```bash
+# ワークスペースディレクトリでDockerコンテナを起動
+docker run -it --gpus all \
+    --shm-size=16g \
+    --ulimit memlock=-1 \
+    --network=host \
+    -v '/path/to/your/workspace:/workspace' \
+    -w /workspace \
+    nvcr.io/nvidia/nemo:25.04 bash
+```
+
+**実際の使用例:**
+```bash
+# 実際のコマンド例（パスは各自の環境に合わせて変更してください）
+docker run -it --gpus all \
+    --shm-size=16g \
+    --ulimit memlock=-1 \
+    --network=host \
+    -v '/home/kosukeyano/workspace/nemo:/workspace' \
+    -w /workspace \
+    nvcr.io/nvidia/nemo:25.04 bash
+```
+
+**パラメータ説明:**
+- `--gpus all`: 全てのGPUにアクセス
+- `--shm-size=16g`: 共有メモリサイズを16GBに設定
+- `--ulimit memlock=-1`: メモリロック制限を無制限に
+- `--network=host`: ホストネットワークを使用
+- `-v '/path/to/your/workspace:/workspace'`: ローカルディレクトリをマウント
+
+### 4. コンテナ内での確認
+
+```bash
+# GPUの確認
+nvidia-smi
+
+# NeMoのバージョン確認
+python -c "import nemo; print(nemo.__version__)"
+```
+
+## 📦 追加パッケージのインストール
+
+Docker環境内で必要に応じて追加パッケージをインストールします：
+
+```bash
+# 追加の依存関係（コンテナ内で実行）
+pip install datasets
+pip install jupyter
+pip install matplotlib seaborn
 ```
 
 ## 📊 データ準備
