@@ -67,19 +67,6 @@ docker run -it --gpus all \
     -w /workspace \
     nvcr.io/nvidia/nemo:25.04 bash
 ```
-
-**実際の使用例:**
-```bash
-# 実際のコマンド例（パスは各自の環境に合わせて変更してください）
-docker run -it --gpus all \
-    --shm-size=16g \
-    --ulimit memlock=-1 \
-    --network=host \
-    -v '/home/kosukeyano/workspace/nemo:/workspace' \
-    -w /workspace \
-    nvcr.io/nvidia/nemo:25.04 bash
-```
-
 **パラメータ説明:**
 - `--gpus all`: 全てのGPUにアクセス
 - `--shm-size=16g`: 共有メモリサイズを16GBに設定
