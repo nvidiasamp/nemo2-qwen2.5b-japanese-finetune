@@ -2,7 +2,7 @@
 
 NeMo 2.0を使用してQwen2.5モデルの日本語ファインチューニングを行うプロジェクトです。[llm-jp-corpus-v3](https://gitlab.llm-jp.nii.ac.jp/datasets/llm-jp-corpus-v3)の日本語Wikipediaデータセットを使用して、効率的なPEFT（Parameter-Efficient Fine-Tuning）による学習を実現します。
 
-## 📋 目次
+## 目次
 
 - [概要](#概要)
 - [環境要件](#環境要件)
@@ -15,7 +15,7 @@ NeMo 2.0を使用してQwen2.5モデルの日本語ファインチューニン�
 - [トラブルシューティング](#トラブルシューティング)
 - [参考資料](#参考資料)
 
-## 🎯 概要
+## 概要
 
 このプロジェクトでは以下の機能を提供します：
 
@@ -24,14 +24,14 @@ NeMo 2.0を使用してQwen2.5モデルの日本語ファインチューニン�
 - **日本語データセット**: llm-jp-corpus-v3のja_wikiデータセットを使用
 - **実践的なサンプル**: 学習から推論までの完全なワークフロー
 
-## 🔧 環境要件
+## 環境要件
 
 - NVIDIA GPUドライバー（推奨: 最新版）
 - Docker & NVIDIA Container Toolkit
 - CUDA対応GPU
 - 十分なディスク容量
 
-## 🐳 Docker環境のセットアップ
+## Docker環境のセットアップ
 
 ### 1. NVIDIA Container Toolkitのインストール
 
@@ -84,7 +84,7 @@ nvidia-smi
 python -c "import nemo; print(nemo.__version__)"
 ```
 
-## 📦 追加パッケージのインストール
+## 追加パッケージのインストール
 
 Docker環境内で必要に応じて追加パッケージをインストールします：
 
@@ -95,7 +95,7 @@ pip install jupyter
 pip install matplotlib seaborn
 ```
 
-## 📊 データ準備
+## データ準備
 
 ### 日本語Wikipediaデータセットのダウンロード
 
@@ -128,7 +128,7 @@ wget -O data/ja_wiki/validation_0.jsonl.gz --no-check-certificate https://gitlab
 gunzip data/ja_wiki/*
 ```
 
-## 🚀 使用方法
+## 使用方法
 
 ### 1. HuggingFaceモデルのNeMo形式への変換
 
@@ -159,7 +159,7 @@ python src/02_qwen25_sft_training.py
 - `sft.ipynb`: 基本的なSFTファインチューニング
 - `sft_ja_wiki.ipynb`: 日本語Wikipedia特化のファインチューニング
 
-## 📁 プロジェクト構成
+## プロジェクト構成
 
 ```
 .
@@ -181,7 +181,7 @@ python src/02_qwen25_sft_training.py
     └── ja_wiki/                      # 日本語Wikipediaデータ
 ```
 
-## 🔬 サンプルコード
+## サンプルコード
 
 ### 基本的なファインチューニング
 
@@ -220,7 +220,7 @@ recipe = llm.qwen25_500m.finetune_recipe(
 run.run(recipe, executor=run.LocalExecutor())
 ```
 
-## 🛠️ トラブルシューティング
+## トラブルシューティング
 
 ### よくある問題
 
@@ -248,23 +248,12 @@ run.run(recipe, executor=run.LocalExecutor())
 - **メモリ削減**: LoRA rank値を調整（デフォルト: 32）
 - **バッチサイズ**: GPUメモリに応じて調整
 
-## 📚 参考資料
+## 参考資料
 
 - [NeMo Documentation](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/stable/)
 - [Qwen2.5 Model](https://huggingface.co/Qwen/Qwen2.5-0.5B)
 - [LLM-jp Corpus v3](https://gitlab.llm-jp.nii.ac.jp/datasets/llm-jp-corpus-v3)
 - [LoRA: Low-Rank Adaptation](https://arxiv.org/abs/2106.09685)
-
-## 📄 ライセンス
-
-このプロジェクトは各々のコンポーネントのライセンスに従います：
-- NeMo: Apache 2.0
-- Qwen2.5: 各モデルのライセンス
-- LLM-jp Corpus: 各データセットのライセンス
-
-## 🤝 コントリビューション
-
-プロジェクトの改善に貢献いただける場合は、Pull Requestを送信してください。
 
 ---
 
