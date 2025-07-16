@@ -28,8 +28,8 @@ NeMo 2.0を使用してQwen2.5モデルの日本語ファインチューニン�
 
 - NVIDIA GPUドライバー（推奨: 最新版）
 - Docker & NVIDIA Container Toolkit
-- CUDA対応GPU（推奨: 16GB+ VRAM）
-- 十分なディスク容量（50GB+推奨）
+- CUDA対応GPU
+- 十分なディスク容量
 
 ## 🐳 Docker環境のセットアップ
 
