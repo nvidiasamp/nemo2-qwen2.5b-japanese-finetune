@@ -51,7 +51,7 @@ def main():
     # データセットの設定
     data_config = run.Config(
         CustomFineTuningDataModule,
-        dataset_root='/workspace/data/sft/',
+        dataset_root='/workspace/data/training_data/',
         seq_length=2048,  # シーケンス長
         micro_batch_size=2,  # 各GPUでのバッチサイズ
         global_batch_size=16,  # 全体のバッチサイズ
@@ -64,7 +64,7 @@ def main():
         name="qwen25_500m_sft",
         num_nodes=1,
         num_gpus_per_node=1,
-        peft_scheme="lora",  # LoRA使用（メモリ効率のため）
+        peft_scheme="none",
     )
 
     # 事前訓練済みモデルの復元設定
@@ -80,17 +80,12 @@ def main():
     recipe.trainer.log_every_n_steps = 10  # ログ出力間隔
     recipe.trainer.enable_checkpointing = True  # チェックポイント有効化
 
-    # PEFTの場合の設定
-    recipe.trainer.strategy.ckpt_async_save = False  # 非同期チェックポイント無効
-    recipe.trainer.strategy.context_parallel_size = 1  # コンテキスト並列サイズ
-    recipe.trainer.strategy.ddp = "megatron"  # LoRA/PEFTに必要
-
     # データモジュールの設定
     recipe.data = data_config
 
     print("=== Training Configuration ===")
     print(f"Model: Qwen2.5-0.5B")
-    print(f"PEFT Scheme: LoRA")
+    print(f"PEFT Scheme: None")
     print(f"Max Steps: {recipe.trainer.max_steps}")
     print(f"Micro Batch Size: {data_config.micro_batch_size}")
     print(f"Global Batch Size: {data_config.global_batch_size}")
