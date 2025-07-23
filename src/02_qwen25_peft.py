@@ -46,7 +46,7 @@ class CustomFineTuningDataModule(FineTuningDataModule):
         super().prepare_data()
 
 def main():
-    print("=== Qwen2.5 SFT Training Script ===")
+    print("=== Qwen2.5 PEFT Training Script ===")
 
     # データセットの設定
     data_config = run.Config(
