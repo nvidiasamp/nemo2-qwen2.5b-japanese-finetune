@@ -1,3 +1,37 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Parameter-Efficient Fine-Tuning (PEFT) for Japanese Language Adaptation
+========================================================================
+
+This module implements Low-Rank Adaptation (LoRA) for efficient fine-tuning of the Qwen2.5-0.5B model
+on Japanese language tasks. The approach is based on the mathematical principle that neural network
+weight updates during fine-tuning often have low intrinsic rank.
+
+Theoretical Foundation:
+----------------------
+LoRA decomposes weight updates as: ΔW = B·A where B ∈ R^{d×r}, A ∈ R^{r×k}, and r << min(d,k)
+
+Key Benefits:
+- Parameter Efficiency: Reduces trainable parameters by >99%
+- Memory Efficiency: Lower GPU memory requirements
+- Modularity: Adapter weights can be easily swapped or combined
+- Preservation: Maintains original model capabilities better than full fine-tuning
+
+Implementation Details:
+- Rank (r): 16 (optimal balance between performance and efficiency)
+- Alpha (α): 32 (scaling factor, typically 2×rank)
+- Target Modules: All linear layers in attention and MLP blocks
+- Dropout: 0.1 for regularization
+
+References:
+- Hu et al. (2021). LoRA: Low-Rank Adaptation of Large Language Models. ICLR 2022.
+- Dettmers et al. (2023). QLoRA: Efficient Finetuning of Quantized LLMs. NeurIPS 2023.
+
+Author: Kosuke & M1nG
+Date: 2024-07-27
+"""
+
 import json
 import os
 import nemo_run as run
