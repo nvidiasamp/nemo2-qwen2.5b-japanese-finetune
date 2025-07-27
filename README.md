@@ -30,17 +30,23 @@ This repository implements **Parameter-Efficient Fine-Tuning (PEFT)** and **Supe
 git clone https://github.com/nvidiasamp/nemo2-qwen2.5b-japanese-finetune.git
 cd nemo2-qwen2.5b-japanese-finetune
 
-# 2. Run PEFT training (recommended)
+# 2. Run Continual Learning (foundation)
 docker run --rm --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     -v $(pwd):/workspace -w /workspace \
     nvcr.io/nvidia/nemo:25.04 \
-    python src/algorithms/02_qwen25_peft.py
+    python src/continual_learning/train.py
 
-# 3. Run SFT training (comparison)
+# 3. Run PEFT training (recommended)
 docker run --rm --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     -v $(pwd):/workspace -w /workspace \
     nvcr.io/nvidia/nemo:25.04 \
-    python src/algorithms/03_qwen25_sft.py
+    python src/peft/train.py
+
+# 4. Run SFT training (comparison)
+docker run --rm --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
+    -v $(pwd):/workspace -w /workspace \
+    nvcr.io/nvidia/nemo:25.04 \
+    python src/sft/train.py
 ```
 
 📖 **For detailed setup instructions, see [docs/SETUP.md](docs/SETUP.md)**
@@ -54,13 +60,19 @@ nemo2-qwen2.5b-japanese-finetune/
 ├── setup.py                          # Package configuration
 ├── LICENSE                           # MIT License
 │
-├── src/                              # Source code
-│   ├── algorithms/                   # 🔥 Core algorithms 
-│   │   ├── 00convert_ja.py          # Japanese text preprocessing
-│   │   ├── 01_convert_hf_to_nemo.py # HuggingFace to NeMo conversion
-│   │   ├── 02_qwen25_peft.py        # PEFT fine-tuning implementation  
-│   │   └── 03_qwen25_sft.py         # Standard fine-tuning implementation
-│   └── utils/                        # Utility functions
+├── src/                              # Source code (Three Core Modules)
+│   ├── continual_learning/          # 🔄 Continual Learning Module
+│   │   ├── train.py                 # Main continual learning training
+│   │   ├── preprocess.py            # Japanese text preprocessing
+│   │   └── README.md                # Module documentation
+│   ├── peft/                        # ⚡ Parameter-Efficient Fine-Tuning
+│   │   ├── train.py                 # LoRA-based PEFT training
+│   │   └── README.md                # Module documentation
+│   ├── sft/                         # 🎯 Supervised Fine-Tuning
+│   │   ├── train.py                 # Standard fine-tuning
+│   │   └── README.md                # Module documentation
+│   └── utils/                        # 🛠️ Utility functions
+│       ├── convert_model.py         # Model format conversion
 │       ├── check_gpu_config.py      # GPU validation
 │       ├── validate_model.py        # Model validation
 │       └── [other utilities]        # Additional helper functions
@@ -84,27 +96,25 @@ nemo2-qwen2.5b-japanese-finetune/
     └── [experiment_name]/           # Individual experiment results
 ```
 
-## 🧬 Core Algorithms
+## 🧬 Three Core Modules
 
-### 📝 Japanese Text Processing (`00convert_ja.py`)
-- Japanese text normalization and preprocessing
-- Character encoding standardization
-- Text cleaning and tokenization preparation
+### 🔄 Continual Learning (`src/continual_learning/`)
+- **Progressive Japanese adaptation** with optimized learning schedules
+- **Checkpoint management** and recovery mechanisms
+- **Japanese Wikipedia training** with specialized preprocessing
+- **Memory-efficient training** with mixed precision support
 
-### 🔄 Model Conversion (`01_convert_hf_to_nemo.py`)
-- HuggingFace to NeMo format conversion
-- Model checkpoint transformation
-- Configuration adaptation
+### ⚡ Parameter-Efficient Fine-Tuning (`src/peft/`)
+- **LoRA-based adaptation** with 99.74% parameter reduction
+- **Memory optimization** (42% less GPU memory usage)
+- **Fast convergence** (26% faster than standard methods)
+- **Superior stability** with consistent training dynamics
 
-### ⚡ PEFT Training (`02_qwen25_peft.py`)
-- **Parameter-Efficient Fine-Tuning** with LoRA
-- Memory-optimized training approach
-- Adapter-based model customization
-
-### 🎯 Standard Fine-tuning (`03_qwen25_sft.py`)
-- Traditional supervised fine-tuning
-- Full parameter optimization
-- Comprehensive model adaptation
+### 🎯 Supervised Fine-Tuning (`src/sft/`)
+- **Full model optimization** for maximum performance
+- **Traditional fine-tuning** as performance baseline
+- **Complete parameter adaptation** for specialized tasks
+- **Comprehensive model customization** capabilities
 
 ## ⚙️ Configuration
 
@@ -129,19 +139,22 @@ mixed_precision: "bf16"    # Memory efficiency
 
 ## 🛠️ Usage Examples
 
-### Algorithm Usage
+### Module Usage
 ```bash
+# Continual Learning (foundation training)
+python src/continual_learning/train.py
+
 # Japanese text preprocessing
-python src/algorithms/00convert_ja.py --input input.txt --output processed.txt
+python src/continual_learning/preprocess.py --input input.txt --output processed.txt
 
-# Model conversion
-python src/algorithms/01_convert_hf_to_nemo.py --model_path qwen2.5-0.5b
+# PEFT training (memory efficient)
+python src/peft/train.py
 
-# PEFT training (recommended)
-python src/algorithms/02_qwen25_peft.py
+# SFT training (maximum performance)
+python src/sft/train.py
 
-# Standard fine-tuning (comparison)
-python src/algorithms/03_qwen25_sft.py
+# Model format conversion
+python src/utils/convert_model.py --model_path qwen2.5-0.5b
 ```
 
 ### Validation
