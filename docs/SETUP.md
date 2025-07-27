@@ -1,117 +1,117 @@
-# 环境设置指南
+# Setup Guide
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 系统要求
+### System Requirements
 - **GPU**: NVIDIA GPU with 12GB+ VRAM
 - **CUDA**: 12.8+
 - **Docker**: 20.10+
-- **存储**: 20GB+ 可用空间
+- **Storage**: 20GB+ available space
 
-### 一键启动
+### One-Click Launch
 
 ```bash
-# 1. 克隆项目
+# 1. Clone the repository
 git clone https://github.com/nvidiasamp/nemo2-qwen2.5b-japanese-finetune.git
 cd nemo2-qwen2.5b-japanese-finetune
 
-# 2. 启动Docker容器并运行
+# 2. Start Docker container and run
 docker run --rm --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     -v $(pwd):/workspace -w /workspace \
     nvcr.io/nvidia/nemo:25.04 \
     python src/algorithms/02_qwen25_peft.py
 ```
 
-## 📋 详细设置
+## 📋 Detailed Setup
 
-### Docker环境
+### Docker Environment
 ```bash
-# 启动交互式容器
+# Start interactive container
 docker run -it --rm --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
     -v $(pwd):/workspace -w /workspace \
     nvcr.io/nvidia/nemo:25.04 /bin/bash
 
-# 验证环境
+# Verify environment
 python -c "import nemo; print('NeMo version:', nemo.__version__)"
 nvidia-smi
 ```
 
-### 本地环境 (可选)
+### Local Environment (Optional)
 ```bash
-# Python 3.8+ 虚拟环境
+# Python 3.8+ virtual environment
 python -m venv nemo_env
 source nemo_env/bin/activate  # Linux/Mac
 # nemo_env\Scripts\activate  # Windows
 
-# 安装依赖
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-## ⚙️ 配置说明
+## ⚙️ Configuration
 
-### PEFT训练配置
+### PEFT Training Configuration
 ```python
-# LoRA参数
-rank = 16              # 适中的参数效率
-alpha = 32             # 缩放因子 (2×rank)
-dropout = 0.1          # 正则化
-learning_rate = 3e-4   # 优化的学习率
+# LoRA parameters
+rank = 16              # Balanced parameter efficiency
+alpha = 32             # Scaling factor (2×rank)
+dropout = 0.1          # Regularization
+learning_rate = 3e-4   # Optimized learning rate
 ```
 
-### SFT训练配置
+### SFT Training Configuration
 ```python
-# 完整微调参数
+# Full fine-tuning parameters
 learning_rate = 3e-4
 batch_size = 4
 max_steps = 1000
 mixed_precision = "bf16"
 ```
 
-## 🔧 常见问题
+## 🔧 Common Issues
 
-### GPU内存不足
+### GPU Memory Insufficient
 ```bash
-# 减少批次大小
+# Reduce batch size
 export MICRO_BATCH_SIZE=2
 
-# 启用梯度检查点
+# Enable gradient checkpointing
 export GRADIENT_CHECKPOINTING=1
 ```
 
-### Docker权限问题
+### Docker Permission Issues
 ```bash
-# 添加用户到docker组
+# Add user to docker group
 sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-### CUDA版本不匹配
+### CUDA Version Mismatch
 ```bash
-# 检查CUDA版本
+# Check CUDA version
 nvidia-smi
 
-# 使用对应的NeMo镜像
+# Use corresponding NeMo image
 # CUDA 11.8: nvcr.io/nvidia/nemo:24.07
 # CUDA 12.1+: nvcr.io/nvidia/nemo:25.04
 ```
 
-## 📚 使用示例
+## 📚 Usage Examples
 
-### PEFT训练
+### PEFT Training
 ```bash
 python src/algorithms/02_qwen25_peft.py
 ```
 
-### SFT训练
+### SFT Training
 ```bash
 python src/algorithms/03_qwen25_sft.py
 ```
 
-### 模型推理
+### Model Inference
 ```bash
 python src/utils/validate_model.py --model_path experiments/peft_model/
 ```
 
 ---
 
-*如遇问题请查看 [TROUBLESHOOTING.md](TROUBLESHOOTING.md)* 
+*For issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)* 
