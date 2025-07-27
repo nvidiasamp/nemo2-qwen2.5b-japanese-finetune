@@ -1,8 +1,12 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -22,57 +26,146 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Virtual Environments
-venv/
-env/
-ENV/
-env.bak/
-venv.bak/
-*_env/
-kaggle_env/
-*_venv/
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
 
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
 
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Machine Learning / Data Science
-*.pkl
-*.joblib
-*.h5
-*.hdf5
-*.model
-*.weights
-models/
-checkpoints/
-data/
-datasets/
-*.csv
-*.tsv
-*.parquet
-*.feather
+# IPython
+profile_default/
+ipython_config.py
 
-# Logs
-*.log
+# pyenv
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# poetry
+#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
+#poetry.lock
+
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
+#pdm.lock
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/#use-with-ide
+.pdm.toml
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be added to the global gitignore or merged into this project gitignore.  For a PyCharm
+#  project, it is recommended to comment the following line:
+#.idea/
+
+# Project specific
+# Data files
+data/raw/
+data/processed/
+data/models/
+data/outputs/
+*.nemo
+*.ckpt
+*.pth
+*.bin
+*.safetensors
+
+# Experiment logs and outputs
+experiments/logs/
+experiments/checkpoints/
+experiments/results/
+experiments/wandb/
+wandb/
 logs/
-*.out
-*.err
+outputs/
 
-# Cache
-cache/
-.cache/
-*cache/
-.pytest_cache/
-.coverage
-.nyc_output
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
 
-# OS
+# OS generated files
 .DS_Store
 .DS_Store?
 ._*
@@ -81,62 +174,112 @@ cache/
 ehthumbs.db
 Thumbs.db
 
-# Temporary files
-*.tmp
-*.temp
-temp/
-tmp/
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Build artifacts
-*.o
-*.a
+# Docker
+.dockerignore
+Dockerfile.local
+
+# Hydra
+outputs/
+.hydra/
+multirun/
+
+# MLflow
+mlruns/
+
+# Model checkpoints and large files
+*.model
+*.pkl
+*.pickle
+*.joblib
+*.hdf5
+*.h5
+
+# Compiled extensions
 *.so
 *.dylib
 *.dll
-*.exe
 
-# Docker
-Dockerfile*
-docker-compose*
-.dockerignore
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
 
-# Node.js (if any)
+# Secrets and credentials
+secrets.yaml
+credentials.json
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Large datasets (add specific patterns as needed)
+*.parquet
+*.arrow
+*.feather
+*.csv.gz
+*.jsonl.gz
+*.tar.gz
+*.zip
+
+# Jupyter
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Documentation build
+docs/_build/
+docs/build/
+site/
+
+# ============== SAFETY PROTECTION ==============
+# Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Git
-*.orig
-*.rej
+# Development tools (Personal configurations)
+.cursor/
+.taskmaster/
 
-# Environment variables
+# Training outputs (Large files)
+experiments/
+*.ckpt
+*.checkpoint
+*.model
+*.pt
+*.bin
+
+# Data directories (Potentially large)
+data/llm_jp_wiki/
+data/*/raw/
+data/*/processed/
+
+# Environment and secrets
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
-# Archives
-*.zip
-*.tar.gz
-*.rar
+# System files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
 
-# Large files
-*.mp4
-*.mov
-*.avi
-*.mkv
-*.mp3
-*.wav
-*.flac
+# IDE configurations
+.vscode/
+.idea/
+*.sublime-*
 
-# Project directories with nested git repos
-ACE/
-AI/
-AIME/
-MTG_ambassador/
-MinerU/
-Model_Management/
-f5-tts/
-kaggle/
-model/
-ops-logbook/ 
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.cache
