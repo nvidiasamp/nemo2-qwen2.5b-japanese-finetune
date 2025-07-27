@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-测试NeMo 2.0直接使用HuggingFace模型ID的能力
-验证是否需要本地import_ckpt转换
+Test NeMo 2.0's ability to directly use HuggingFace model IDs
+Verify if local import_ckpt conversion is needed
 """
 
 import os
 import sys
 from pathlib import Path
 
-# 设置项目根目录
+# Set project root directory
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 def test_direct_hf_model():
-    """测试直接使用HF模型ID"""
+    """Test direct use of HF model ID"""
     
-    print("🧪 测试NeMo 2.0直接使用HuggingFace模型ID")
-    print("验证是否可以跳过本地import_ckpt转换步骤")
+    print("🧪 Testing NeMo 2.0 Direct Use of HuggingFace Model ID")
+    print("Verify if local import_ckpt conversion step can be skipped")
     print("=" * 60)
     
     try:
@@ -24,10 +24,10 @@ def test_direct_hf_model():
         import nemo_run as run
         from nemo import lightning as nl
         
-        print("✅ 导入NeMo模块成功")
+        print("✅ NeMo modules imported successfully")
         
-        # 测试1: 配置recipe使用直接HF模型ID
-        print("\n🔧 测试1: 配置recipe使用hf://协议...")
+        # Test 1: Configure recipe to use direct HF model ID
+        print("\n🔧 Test 1: Configure recipe to use hf:// protocol...")
         try:
             recipe = llm.qwen25_500m.pretrain_recipe(
                 name="test_direct_hf",
@@ -36,59 +36,59 @@ def test_direct_hf_model():
                 num_gpus_per_node=1,
             )
             
-            # 直接使用HF模型ID
+            # Use HF model ID directly
             recipe.resume.restore_config = run.Config(
                 nl.RestoreConfig,
                 path='hf://Qwen/Qwen2.5-0.5B'
             )
             
-            print("✅ hf://协议配置成功")
-            print(f"✅ 配置路径: {recipe.resume.restore_config.path}")
+            print("✅ hf:// protocol configuration successful")
+            print(f"✅ Configuration path: {recipe.resume.restore_config.path}")
             
         except Exception as e:
-            print(f"❌ hf://协议配置失败: {e}")
+            print(f"❌ hf:// protocol configuration failed: {e}")
             return False
         
-        # 测试2: 验证recipe对象结构
-        print("\n🔍 测试2: 验证recipe配置结构...")
+        # Test 2: Verify recipe object structure
+        print("\n🔍 Test 2: Verify recipe configuration structure...")
         try:
-            print(f"Recipe类型: {type(recipe)}")
-            print(f"Resume配置: {recipe.resume}")
-            print(f"Restore路径: {recipe.resume.restore_config.path}")
-            print("✅ Recipe配置结构正确")
+            print(f"Recipe type: {type(recipe)}")
+            print(f"Resume config: {recipe.resume}")
+            print(f"Restore path: {recipe.resume.restore_config.path}")
+            print("✅ Recipe configuration structure correct")
             
         except Exception as e:
-            print(f"❌ Recipe配置结构验证失败: {e}")
+            print(f"❌ Recipe configuration structure verification failed: {e}")
             return False
             
-        # 测试3: 模拟训练初始化
-        print("\n⚡ 测试3: 模拟训练初始化...")
+        # Test 3: Simulate training initialization
+        print("\n⚡ Test 3: Simulate training initialization...")
         try:
-            # 注意：这里不真正运行训练，只验证配置
-            print("模拟训练配置检查...")
+            # Note: Not actually running training, just validating configuration
+            print("Simulating training configuration check...")
             
-            # 检查是否有trainer配置
+            # Check if trainer configuration exists
             if hasattr(recipe, 'trainer'):
-                print("✅ Trainer配置存在")
+                print("✅ Trainer configuration exists")
             else:
-                print("❌ Trainer配置缺失")
+                print("❌ Trainer configuration missing")
                 
-            # 检查model配置
+            # Check model configuration
             if hasattr(recipe, 'model'):
-                print("✅ Model配置存在")
+                print("✅ Model configuration exists")
             else:
-                print("❌ Model配置缺失")
+                print("❌ Model configuration missing")
             
-            print("✅ 训练配置结构验证通过")
+            print("✅ Training configuration structure verification passed")
             
         except Exception as e:
-            print(f"❌ 训练配置验证失败: {e}")
+            print(f"❌ Training configuration verification failed: {e}")
             return False
             
-        # 测试4: 与本地模型路径对比
-        print("\n🔄 测试4: 测试本地路径与HF路径的兼容性...")
+        # Test 4: Compare local path with HF path compatibility
+        print("\n🔄 Test 4: Test compatibility between local path and HF path...")
         try:
-            # 测试本地路径配置
+            # Test local path configuration
             recipe_local = llm.qwen25_500m.pretrain_recipe(
                 name="test_local",
                 dir="./temp_test_local",
@@ -98,65 +98,65 @@ def test_direct_hf_model():
             
             recipe_local.resume.restore_config = run.Config(
                 nl.RestoreConfig,
-                path='./data/models/qwen25_0.5b'  # 本地路径
+                path='./data/models/qwen25_0.5b'  # Local path
             )
             
-            print("✅ 本地路径配置成功")
-            print("✅ 两种方式都支持配置")
+            print("✅ Local path configuration successful")
+            print("✅ Both methods support configuration")
             
         except Exception as e:
-            print(f"❌ 本地路径配置失败: {e}")
+            print(f"❌ Local path configuration failed: {e}")
             
-        print("\n🎉 测试总结:")
-        print("✅ NeMo 2.0确实支持直接使用hf://协议")
-        print("✅ 无需本地import_ckpt转换步骤")
-        print("✅ 可以节省本地存储空间")
-        print("✅ 配置更简单，符合现代ML框架做法")
+        print("\n🎉 Test Summary:")
+        print("✅ NeMo 2.0 indeed supports direct use of hf:// protocol")
+        print("✅ No need for local import_ckpt conversion step")
+        print("✅ Can save local storage space")
+        print("✅ Simpler configuration, aligns with modern ML framework practices")
         
         return True
         
     except ImportError as e:
-        print(f"❌ NeMo导入失败: {e}")
+        print(f"❌ NeMo import failed: {e}")
         return False
     except Exception as e:
-        print(f"❌ 测试失败: {e}")
+        print(f"❌ Test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 def recommend_cleanup():
-    """推荐清理方案"""
+    """Recommend cleanup solution"""
     
     print("\n" + "="*60)
-    print("💡 推荐的清理和优化方案:")
+    print("💡 Recommended cleanup and optimization solution:")
     print("="*60)
     
-    print("\n1. 📁 删除本地模型文件:")
+    print("\n1. 📁 Delete local model files:")
     print("   - rm -rf data/models/qwen25_0.5b")
     print("   - rm -rf data/models/qwen25_0.5b.nemo")
-    print("   - 节省空间: 2.4GB")
+    print("   - Space saved: 2.4GB")
     
-    print("\n2. 🔧 更新配置文件:")
-    print("   - 使用 hf://Qwen/Qwen2.5-0.5B 直接引用")
-    print("   - 移除本地路径引用")
+    print("\n2. 🔧 Update configuration files:")
+    print("   - Use hf://Qwen/Qwen2.5-0.5B direct reference")
+    print("   - Remove local path references")
     
-    print("\n3. 📝 更新脚本:")
-    print("   - 移除import_qwen25.py脚本")
-    print("   - 更新训练脚本使用hf://协议")
+    print("\n3. 📝 Update scripts:")
+    print("   - Remove import_qwen25.py script")
+    print("   - Update training scripts to use hf:// protocol")
     
-    print("\n4. ✅ 优势:")
-    print("   - 节省本地存储空间")
-    print("   - 自动获取最新模型版本")
-    print("   - 简化部署流程")
-    print("   - 减少维护成本")
+    print("\n4. ✅ Advantages:")
+    print("   - Save local storage space")
+    print("   - Automatically get latest model version")
+    print("   - Simplify deployment process")
+    print("   - Reduce maintenance cost")
 
 if __name__ == "__main__":
     success = test_direct_hf_model()
     
     if success:
         recommend_cleanup()
-        print("\n🚀 建议采用直接HF模型ID的方式！")
+        print("\n🚀 Recommend adopting direct HF model ID approach!")
     else:
-        print("\n⚠️  建议保留本地模型文件作为备用方案")
+        print("\n⚠️  Recommend keeping local model files as backup solution")
     
     sys.exit(0 if success else 1) 

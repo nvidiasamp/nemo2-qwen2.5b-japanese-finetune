@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-日本語WikipediaデータをNeMo 2.0 SFT形式に変換するスクリプト
-入力形式: {"text": "記事内容", "meta": {"id": "ID", "title": "タイトル", "url": "URL"}}
-出力形式: {"input": "質問", "output": "回答"}
+Japanese Wikipedia Data to NeMo 2.0 SFT Format Conversion Script
+Input format: {"text": "article content", "meta": {"id": "ID", "title": "title", "url": "URL"}}
+Output format: {"input": "question", "output": "answer"}
 """
 
 import json
@@ -12,25 +12,25 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-# SFTに適した長さの設定
-MAX_OUTPUT_LENGTH = 1500  # 回答の最大文字数
-MIN_OUTPUT_LENGTH = 50  # 回答の最小文字数
-MAX_INPUT_LENGTH = 200  # 質問の最大文字数
-CHUNK_SIZE = 800  # チャンクサイズ（文字数）
+# Length settings suitable for SFT
+MAX_OUTPUT_LENGTH = 1500  # Maximum character count for answers
+MIN_OUTPUT_LENGTH = 50  # Minimum character count for answers
+MAX_INPUT_LENGTH = 200  # Maximum character count for questions
+CHUNK_SIZE = 800  # Chunk size (character count)
 
 
 def clean_text(text: str) -> str:
-    """テキストをクリーンアップ"""
-    # 余分な改行を整理
+    """Clean up text"""
+    # Clean up excessive line breaks
     text = re.sub(r"\n{3,}", "\n\n", text)
-    # 余分な空白を削除
+    # Remove excessive spaces
     text = re.sub(r" +", " ", text)
     return text.strip()
 
 
 def split_text_into_chunks(text: str, chunk_size: int = CHUNK_SIZE) -> List[str]:
-    """テキストを適切な長さのチャンクに分割"""
-    # 文単位で分割
+    """Split text into chunks of appropriate length"""
+    # Split by sentences
     sentences = re.split(r"[。！？]", text)
     chunks = []
     current_chunk = ""
@@ -40,18 +40,18 @@ def split_text_into_chunks(text: str, chunk_size: int = CHUNK_SIZE) -> List[str]
         if not sentence:
             continue
 
-        # 文を追加した場合の長さをチェック
+        # Check length if sentence is added
         potential_chunk = current_chunk + sentence + "。"
 
         if len(potential_chunk) <= chunk_size:
             current_chunk = potential_chunk
         else:
-            # 現在のチャンクを保存（最小長さを満たす場合）
+            # Save current chunk (if it meets minimum length)
             if len(current_chunk) >= MIN_OUTPUT_LENGTH:
                 chunks.append(current_chunk)
             current_chunk = sentence + "。"
 
-    # 最後のチャンクを追加
+    # Add last chunk
     if len(current_chunk) >= MIN_OUTPUT_LENGTH:
         chunks.append(current_chunk)
 
@@ -59,13 +59,13 @@ def split_text_into_chunks(text: str, chunk_size: int = CHUNK_SIZE) -> List[str]
 
 
 def create_summary(text: str, max_length: int = 300) -> str:
-    """記事の要約を作成（先頭部分を使用）"""
-    # 最初の段落または指定長さまでを要約として使用
+    """Create article summary (using the beginning part)"""
+    # Use first paragraph or up to specified length as summary
     paragraphs = text.split("\n\n")
     summary = paragraphs[0] if paragraphs else text
 
     if len(summary) > max_length:
-        # 文の境界で切り詰め
+        # Truncate at sentence boundaries
         sentences = re.split(r"[。！？]", summary)
         result = ""
         for sentence in sentences:
@@ -79,20 +79,20 @@ def create_summary(text: str, max_length: int = 300) -> str:
 
 
 def create_qa_pairs_from_article(article: Dict) -> List[Dict]:
-    """記事から適切な長さの質問-回答ペアを複数生成"""
+    """Generate multiple question-answer pairs of appropriate length from article"""
     text = article["text"]
     title = article["meta"]["title"]
 
-    # テキストをクリーンアップ
+    # Clean up text
     cleaned_text = clean_text(text)
 
-    # 記事が短すぎる場合はスキップ
+    # Skip if article is too short
     if len(cleaned_text) < MIN_OUTPUT_LENGTH:
         return []
 
     qa_pairs = []
 
-    # 1. 要約版の質問-回答ペア
+    # 1. Summary version question-answer pairs
     summary = create_summary(cleaned_text)
     if len(summary) >= MIN_OUTPUT_LENGTH:
         qa_pairs.extend(
@@ -105,25 +105,25 @@ def create_qa_pairs_from_article(article: Dict) -> List[Dict]:
             ]
         )
 
-    # 2. チャンク分割による詳細な質問-回答ペア
+    # 2. Detailed question-answer pairs by chunk splitting
     chunks = split_text_into_chunks(cleaned_text)
 
     for i, chunk in enumerate(chunks):
-        # 長さ制限チェック
+        # Length limit check
         if len(chunk) > MAX_OUTPUT_LENGTH:
             chunk = chunk[:MAX_OUTPUT_LENGTH] + "..."
 
         if len(chunk) < MIN_OUTPUT_LENGTH:
             continue
 
-        # チャンクベースの質問パターン
+        # Chunk-based question patterns
         if i == 0:
-            # 最初のチャンクは概要として扱う
+            # First chunk treated as overview
             qa_pairs.append(
                 {"input": f"{title}について教えてください。", "output": chunk}
             )
         else:
-            # 他のチャンクは詳細情報として扱う
+            # Other chunks treated as detailed information
             qa_pairs.append(
                 {
                     "input": f"{title}についてさらに詳しく教えてください。",
@@ -131,7 +131,7 @@ def create_qa_pairs_from_article(article: Dict) -> List[Dict]:
                 }
             )
 
-        # 特定のキーワードに基づく質問
+        # Questions based on specific keywords
         if "歴史" in chunk:
             qa_pairs.append(
                 {"input": f"{title}の歴史について教えてください。", "output": chunk}
@@ -142,13 +142,13 @@ def create_qa_pairs_from_article(article: Dict) -> List[Dict]:
                 {"input": f"{title}の特徴について説明してください。", "output": chunk}
             )
 
-    # 3. 全記事が短い場合は全体を使用
+    # 3. If entire article is short, use the whole thing
     if len(cleaned_text) <= MAX_OUTPUT_LENGTH and not qa_pairs:
         qa_pairs.append(
             {"input": f"{title}について教えてください。", "output": cleaned_text}
         )
 
-    # 質問の長さチェックと調整
+    # Question length check and adjustment
     filtered_qa_pairs = []
     for qa in qa_pairs:
         if (
@@ -163,7 +163,7 @@ def create_qa_pairs_from_article(article: Dict) -> List[Dict]:
 def process_jsonl_file(
     input_file: str, max_articles: Optional[int] = None
 ) -> List[Dict]:
-    """JSONLファイルを処理してQAペアを生成"""
+    """Process JSONL file to generate QA pairs"""
     qa_pairs = []
     processed_count = 0
 
@@ -179,11 +179,11 @@ def process_jsonl_file(
                 if not article.get("text") or not article.get("meta", {}).get("title"):
                     continue
 
-                # 短すぎる記事はスキップ（最低限の品質確保）
+                # Skip articles that are too short (ensure minimum quality)
                 if len(article["text"]) < 100:
                     continue
 
-                # 質問-回答ペアを生成
+                # Generate question-answer pairs
                 pairs = create_qa_pairs_from_article(article)
                 qa_pairs.extend(pairs)
                 processed_count += 1
@@ -207,7 +207,7 @@ def process_jsonl_file(
 
 
 def save_qa_pairs(qa_pairs: List[Dict], output_file: str) -> None:
-    """QAペアをJSONL形式で保存"""
+    """Save QA pairs in JSONL format"""
     print(f"Saving {len(qa_pairs)} QA pairs to {output_file}")
 
     with open(output_file, "w", encoding="utf-8") as f:
@@ -219,14 +219,14 @@ def save_qa_pairs(qa_pairs: List[Dict], output_file: str) -> None:
 
 
 def main():
-    # 設定
+    # Configuration
     input_dir = "/workspace/data/ja_wiki"
     output_dir = "/workspace/data/training_data"
 
-    # 出力ディレクトリを作成
+    # Create output directory
     os.makedirs(output_dir, exist_ok=True)
 
-    # 入力ファイルリストを取得
+    # Get input file list
     input_files = []
     for file in sorted(os.listdir(input_dir)):
         if file.endswith(".jsonl"):
@@ -234,38 +234,38 @@ def main():
 
     print(f"Found {len(input_files)} JSONL files in {input_dir}")
 
-    # 各ファイルを処理
+    # Process each file
     all_qa_pairs = []
 
-    # 訓練用ファイル（train_*.jsonl）を処理 - すべてのデータを使用
+    # Process training files (train_*.jsonl) - use all data
     train_files = [f for f in input_files if "train_" in os.path.basename(f)]
     for train_file in train_files:
-        # すべての記事を処理
+        # Process all articles
         qa_pairs = process_jsonl_file(train_file, max_articles=None)
         all_qa_pairs.extend(qa_pairs)
 
-    # バリデーション用ファイルを処理 - すべてのデータを使用
+    # Process validation files - use all data
     validation_files = [f for f in input_files if "validation_" in os.path.basename(f)]
     validation_qa_pairs = []
     for val_file in validation_files:
         qa_pairs = process_jsonl_file(val_file, max_articles=None)
         validation_qa_pairs.extend(qa_pairs)
 
-    # シャッフル
+    # Shuffle
     random.seed(42)
     random.shuffle(all_qa_pairs)
     random.shuffle(validation_qa_pairs)
 
-    # データ数制限なし - すべてのデータを使用
+    # No data limit - use all data
     print(
         f"Using all data: {len(all_qa_pairs)} training samples, {len(validation_qa_pairs)} validation samples"
     )
 
-    # 保存
+    # Save
     save_qa_pairs(all_qa_pairs, os.path.join(output_dir, "training.jsonl"))
     save_qa_pairs(validation_qa_pairs, os.path.join(output_dir, "validation.jsonl"))
 
-    print(f"\n=== 変換完了 ===")
+    print(f"\n=== Conversion Complete ===")
     print(f"Training samples: {len(all_qa_pairs)}")
     print(f"Validation samples: {len(validation_qa_pairs)}")
     print(f"Output directory: {output_dir}")

@@ -7,8 +7,8 @@ from nemo.collections.llm.gpt.data.fine_tuning import FineTuningDataModule
 
 class CustomFineTuningDataModule(FineTuningDataModule):
     """
-    準備済みのJSONLファイルを使用するカスタムデータモジュール
-    データ形式: {"input": "質問", "output": "回答"}
+    Custom data module using pre-prepared JSONL files
+    Data format: {"input": "question", "output": "answer"}
     """
 
     def __init__(self, dataset_root: str, **kwargs):
@@ -17,8 +17,8 @@ class CustomFineTuningDataModule(FineTuningDataModule):
 
     def prepare_data(self) -> None:
         """
-        データの準備処理 - 既にJSONL形式で準備済みなので、
-        ファイルの存在確認のみ実行
+        Data preparation process - since already prepared in JSONL format,
+        only check file existence
         """
         train_path = os.path.join(self.dataset_root, "training.jsonl")
         val_path = os.path.join(self.dataset_root, "validation.jsonl")
@@ -31,7 +31,7 @@ class CustomFineTuningDataModule(FineTuningDataModule):
         print(f"Found training data: {train_path}")
         print(f"Found validation data: {val_path}")
 
-        # ファイル名をNeMoが期待する形式にリネーム（必要に応じて）
+        # Rename files to format expected by NeMo (if necessary)
         training_jsonl = os.path.join(self.dataset_root, "training.jsonl")
         validation_jsonl = os.path.join(self.dataset_root, "validation.jsonl")
 
@@ -48,39 +48,39 @@ class CustomFineTuningDataModule(FineTuningDataModule):
 def main():
     print("=== Qwen2.5 SFT Training Script ===")
 
-    # データセットの設定
+    # Dataset configuration
     data_config = run.Config(
         CustomFineTuningDataModule,
         dataset_root='/workspace/data/training_data/',
-        seq_length=2048,  # シーケンス長
-        micro_batch_size=2,  # 各GPUでのバッチサイズ
-        global_batch_size=16,  # 全体のバッチサイズ
+        seq_length=2048,  # Sequence length
+        micro_batch_size=2,  # Batch size per GPU
+        global_batch_size=16,  # Total batch size
         dataset_kwargs={}
     )
 
-    # ファインチューニングレシピの設定
+    # Fine-tuning recipe configuration
     recipe = llm.qwen25_500m.finetune_recipe(
-        dir="/workspace/models/checkpoints/qwen25_500m_sft",  # チェックポイント保存先
+        dir="/workspace/models/checkpoints/qwen25_500m_sft",  # Checkpoint save path
         name="qwen25_500m_sft",
         num_nodes=1,
         num_gpus_per_node=1,
         peft_scheme="none",
     )
 
-    # 事前訓練済みモデルの復元設定
+    # Pre-trained model restore configuration
     recipe.resume.restore_config = run.Config(
         nl.RestoreConfig,
-        path='/workspace/qwen2.5-0.5b.nemo'  # 変換済みのNeMoモデル
+        path='/workspace/qwen2.5-0.5b.nemo'  # Converted NeMo model
     )
 
-    # トレーニング設定
-    recipe.trainer.max_steps = 1000  # 最大ステップ数
-    recipe.trainer.num_sanity_val_steps = 2  # バリデーション確認ステップ
-    recipe.trainer.val_check_interval = 100  # バリデーション実行間隔
-    recipe.trainer.log_every_n_steps = 10  # ログ出力間隔
-    recipe.trainer.enable_checkpointing = True  # チェックポイント有効化
+    # Training configuration
+    recipe.trainer.max_steps = 1000  # Maximum steps
+    recipe.trainer.num_sanity_val_steps = 2  # Validation sanity check steps
+    recipe.trainer.val_check_interval = 100  # Validation check interval
+    recipe.trainer.log_every_n_steps = 10  # Logging interval
+    recipe.trainer.enable_checkpointing = True  # Enable checkpointing
 
-    # データモジュールの設定
+    # Data module configuration
     recipe.data = data_config
 
     print("=== Training Configuration ===")
@@ -93,7 +93,7 @@ def main():
     print(f"Checkpoint Dir: {recipe.log.log_dir}")
     print(f"Data Root: {data_config.dataset_root}")
 
-    # トレーニング実行
+    # Execute training
     print("\n=== Starting Training ===")
     run.run(recipe, executor=run.LocalExecutor())
 

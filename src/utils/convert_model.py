@@ -5,7 +5,7 @@ if __name__ == "__main__":
     model_config = llm.Qwen25Config500M()
     model = llm.Qwen2Model(model_config)
 
-    # .nemo ファイルの出力先を指定
+    # Specify output path for .nemo file
     output_path = "qwen2.5-0.5b.nemo"
 
     llm.import_ckpt(model=model, source='hf://Qwen/Qwen2.5-0.5B', output_path=output_path, overwrite=True)

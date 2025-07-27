@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-深入调查NeMo 2.0如何处理hf://协议的模型
-验证模型下载、缓存、转换的实际过程
+Deep investigation of how NeMo 2.0 handles hf:// protocol models
+Verify actual process of model download, cache, and conversion
 """
 
 import os
@@ -9,16 +9,16 @@ import sys
 import shutil
 from pathlib import Path
 
-# 设置项目根目录
+# Set project root directory
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 def check_huggingface_cache():
-    """检查HuggingFace缓存目录"""
+    """Check HuggingFace cache directory"""
     
-    print("🔍 检查HuggingFace缓存状态...")
+    print("🔍 Checking HuggingFace cache status...")
     
-    # 常见的HF缓存路径
+    # Common HF cache paths
     cache_paths = [
         Path.home() / ".cache" / "huggingface",
         Path.home() / ".cache" / "huggingface" / "hub",
@@ -27,22 +27,22 @@ def check_huggingface_cache():
     
     for cache_path in cache_paths:
         if cache_path.exists():
-            print(f"✅ 发现缓存目录: {cache_path}")
+            print(f"✅ Found cache directory: {cache_path}")
             
-            # 检查是否有Qwen相关的缓存
+            # Check if there's Qwen-related cache
             qwen_cache = list(cache_path.glob("*Qwen*"))
             if qwen_cache:
-                print(f"  📦 Qwen缓存: {len(qwen_cache)} 个条目")
-                for item in qwen_cache[:3]:  # 显示前3个
+                print(f"  📦 Qwen cache: {len(qwen_cache)} entries")
+                for item in qwen_cache[:3]:  # Show first 3
                     size = get_dir_size(item) if item.is_dir() else item.stat().st_size
                     print(f"    - {item.name}: {format_size(size)}")
             else:
-                print("  📦 暂无Qwen相关缓存")
+                print("  📦 No Qwen-related cache yet")
         else:
-            print(f"❌ 缓存目录不存在: {cache_path}")
+            print(f"❌ Cache directory does not exist: {cache_path}")
 
 def get_dir_size(path):
-    """获取目录大小"""
+    """Get directory size"""
     total = 0
     try:
         for dirpath, dirnames, filenames in os.walk(path):
@@ -57,7 +57,7 @@ def get_dir_size(path):
     return total
 
 def format_size(bytes_size):
-    """格式化文件大小"""
+    """Format file size"""
     for unit in ['B', 'KB', 'MB', 'GB']:
         if bytes_size < 1024.0:
             return f"{bytes_size:.1f}{unit}"
@@ -65,17 +65,17 @@ def format_size(bytes_size):
     return f"{bytes_size:.1f}TB"
 
 def test_recipe_model_loading():
-    """测试recipe如何处理hf://协议"""
+    """Test how recipe handles hf:// protocol"""
     
-    print("\n🔬 测试Recipe模型加载过程...")
+    print("\n🔬 Testing Recipe Model Loading Process...")
     
     try:
         from nemo.collections import llm
         import nemo_run as run
         from nemo import lightning as nl
         
-        # 创建recipe
-        print("1️⃣ 创建recipe配置...")
+        # Create recipe
+        print("1️⃣ Creating recipe configuration...")
         recipe = llm.qwen25_500m.pretrain_recipe(
             name="test_hf_loading",
             dir="./temp_test_loading",
@@ -83,110 +83,110 @@ def test_recipe_model_loading():
             num_gpus_per_node=1,
         )
         
-        # 配置hf://路径
+        # Configure hf:// path
         recipe.resume.restore_config = run.Config(
             nl.RestoreConfig,
             path='hf://Qwen/Qwen2.5-0.5B'
         )
         
-        print("✅ Recipe配置完成")
-        print(f"模型路径: {recipe.resume.restore_config.path}")
+        print("✅ Recipe configuration complete")
+        print(f"Model path: {recipe.resume.restore_config.path}")
         
-        # 检查recipe的内部结构
-        print("\n2️⃣ 分析Recipe内部结构...")
-        print(f"Resume配置类型: {type(recipe.resume)}")
-        print(f"RestoreConfig类型: {type(recipe.resume.restore_config)}")
-        print(f"路径配置: {recipe.resume.restore_config.path}")
+        # Check recipe internal structure
+        print("\n2️⃣ Analyzing Recipe internal structure...")
+        print(f"Resume config type: {type(recipe.resume)}")
+        print(f"RestoreConfig type: {type(recipe.resume.restore_config)}")
+        print(f"Path configuration: {recipe.resume.restore_config.path}")
         
-        # 尝试检查模型配置
-        print("\n3️⃣ 检查模型配置...")
+        # Try to check model configuration
+        print("\n3️⃣ Checking model configuration...")
         if hasattr(recipe, 'model'):
-            print(f"模型配置存在: {type(recipe.model)}")
+            print(f"Model configuration exists: {type(recipe.model)}")
             if hasattr(recipe.model, 'config'):
-                print(f"模型config: {recipe.model.config}")
+                print(f"Model config: {recipe.model.config}")
         
         return True
         
     except Exception as e:
-        print(f"❌ Recipe测试失败: {e}")
+        print(f"❌ Recipe test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 def test_direct_model_loading():
-    """测试直接模型加载"""
+    """Test direct model loading"""
     
-    print("\n🎯 测试直接模型加载...")
+    print("\n🎯 Testing direct model loading...")
     
     try:
         from nemo.collections import llm
         from nemo import lightning as nl
         
-        # 创建模型配置
-        print("1️⃣ 创建模型配置...")
+        # Create model configuration
+        print("1️⃣ Creating model configuration...")
         model_config = llm.Qwen25Config500M()
-        print(f"✅ 模型配置: {type(model_config)}")
+        print(f"✅ Model configuration: {type(model_config)}")
         
-        # 创建模型实例
-        print("2️⃣ 创建模型实例...")
+        # Create model instance
+        print("2️⃣ Creating model instance...")
         model = llm.Qwen2Model(model_config)
-        print(f"✅ 模型实例: {type(model)}")
+        print(f"✅ Model instance: {type(model)}")
         
-        # 尝试从HF路径恢复
-        print("3️⃣ 测试从HF路径恢复...")
-        # 注意：这里可能会触发实际的下载和转换
+        # Try to restore from HF path
+        print("3️⃣ Testing restore from HF path...")
+        # Note: This might trigger actual download and conversion
         try:
-            # 这个操作可能会很耗时，先看看是否支持
-            print("尝试恢复模型...")
+            # This operation might be time-consuming, let's see if it's supported first
+            print("Attempting model restore...")
             # model_restored = llm.Qwen2Model.restore_from('hf://Qwen/Qwen2.5-0.5B')
-            print("⚠️  实际恢复操作需要更多时间，暂时跳过")
+            print("⚠️  Actual restore operation needs more time, skipping for now")
         except Exception as e:
-            print(f"恢复过程信息: {e}")
+            print(f"Restore process info: {e}")
         
         return True
         
     except Exception as e:
-        print(f"❌ 直接加载测试失败: {e}")
+        print(f"❌ Direct loading test failed: {e}")
         return False
 
 def investigate_nemo_internals():
-    """调查NeMo的内部机制"""
+    """Investigate NeMo internal mechanisms"""
     
-    print("\n🔍 调查NeMo内部机制...")
+    print("\n🔍 Investigating NeMo internal mechanisms...")
     
     try:
         from nemo.collections import llm
         from nemo import lightning as nl
         import nemo_run as run
         
-        # 检查RestoreConfig的实现
-        print("1️⃣ 检查RestoreConfig...")
+        # Check RestoreConfig implementation
+        print("1️⃣ Checking RestoreConfig...")
         restore_config = nl.RestoreConfig(path='hf://Qwen/Qwen2.5-0.5B')
-        print(f"RestoreConfig类型: {type(restore_config)}")
-        print(f"路径解析: {restore_config.path}")
+        print(f"RestoreConfig type: {type(restore_config)}")
+        print(f"Path parsing: {restore_config.path}")
         
-        # 检查是否有相关的加载器
-        print("\n2️⃣ 检查模型加载器...")
+        # Check if there are related loaders
+        print("\n2️⃣ Checking model loaders...")
         if hasattr(llm, 'Qwen2Model'):
             qwen_model = llm.Qwen2Model
-            print(f"Qwen2Model类: {qwen_model}")
+            print(f"Qwen2Model class: {qwen_model}")
             
-            # 检查是否有特殊的加载方法
+            # Check if there are special loading methods
             methods = [attr for attr in dir(qwen_model) if 'load' in attr.lower() or 'restore' in attr.lower()]
-            print(f"加载相关方法: {methods}")
+            print(f"Loading-related methods: {methods}")
         
         return True
         
     except Exception as e:
-        print(f"❌ 内部机制调查失败: {e}")
+        print(f"❌ Internal mechanism investigation failed: {e}")
         return False
 
 def monitor_file_system_changes():
-    """监控文件系统变化"""
+    """Monitor file system changes"""
     
-    print("\n📁 监控文件系统状态...")
+    print("\n📁 Monitoring file system status...")
     
-    # 检查当前项目目录
+    # Check current project directories
     project_dirs = [
         Path("."),
         Path("./data"),
@@ -199,58 +199,58 @@ def monitor_file_system_changes():
             size = get_dir_size(dir_path)
             print(f"📂 {dir_path}: {format_size(size)}")
         else:
-            print(f"📂 {dir_path}: 不存在")
+            print(f"📂 {dir_path}: does not exist")
 
 def main():
-    """主函数：全面调查NeMo 2.0的模型处理机制"""
+    """Main function: Comprehensive investigation of NeMo 2.0 model processing mechanism"""
     
-    print("🔬 深入调查NeMo 2.0模型处理机制")
+    print("🔬 Deep Investigation of NeMo 2.0 Model Processing Mechanism")
     print("=" * 60)
     
-    # 初始状态检查
-    print("📊 初始状态检查...")
+    # Initial status check
+    print("📊 Initial status check...")
     check_huggingface_cache()
     monitor_file_system_changes()
     
-    # 测试recipe配置
+    # Test recipe configuration
     recipe_success = test_recipe_model_loading()
     
-    # 测试直接模型加载
+    # Test direct model loading
     direct_success = test_direct_model_loading()
     
-    # 调查内部机制
+    # Investigate internal mechanisms
     internal_success = investigate_nemo_internals()
     
-    # 最终状态检查
-    print("\n📊 最终状态检查...")
+    # Final status check
+    print("\n📊 Final status check...")
     check_huggingface_cache()
     monitor_file_system_changes()
     
-    # 总结发现
+    # Summarize findings
     print("\n" + "="*60)
-    print("📋 调查总结:")
+    print("📋 Investigation Summary:")
     print("="*60)
     
     if recipe_success:
-        print("✅ Recipe配置：支持hf://协议")
+        print("✅ Recipe configuration: supports hf:// protocol")
     else:
-        print("❌ Recipe配置：存在问题")
+        print("❌ Recipe configuration: has issues")
     
     if direct_success:
-        print("✅ 直接加载：基本配置正常")
+        print("✅ Direct loading: basic configuration normal")
     else:
-        print("❌ 直接加载：存在问题")
+        print("❌ Direct loading: has issues")
     
     if internal_success:
-        print("✅ 内部机制：可以正常调查")
+        print("✅ Internal mechanisms: can be investigated normally")
     else:
-        print("❌ 内部机制：调查遇到问题")
+        print("❌ Internal mechanisms: investigation encountered issues")
     
-    print("\n💡 关键发现：")
-    print("1. hf://协议在配置层面是被支持的")
-    print("2. 实际的模型下载和转换会在训练开始时触发")
-    print("3. NeMo仍然需要将HF模型转换为内部格式")
-    print("4. 这个过程对用户来说是透明的")
+    print("\n💡 Key findings:")
+    print("1. hf:// protocol is supported at configuration level")
+    print("2. Actual model download and conversion will be triggered when training starts")
+    print("3. NeMo still needs to convert HF models to internal format")
+    print("4. This process is transparent to users")
     
     return all([recipe_success, direct_success, internal_success])
 
