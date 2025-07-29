@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# 容器内数据处理脚本 - 修正版
+# Container data processing script - Fixed version
 set -e
 
-# 配置变量
+# Configuration variables
 WORKSPACE="/workspace"
 DATA_ROOT="${WORKSPACE}/data/llm_jp_wiki"
 RAW_DATA_DIR="${DATA_ROOT}/raw/ja_wiki"
 OUTPUT_DIR="${DATA_ROOT}/nemo_binary"
 TOKENIZER="Qwen/Qwen2.5-0.5B"
 
-# 颜色输出
+# Color output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
@@ -28,52 +28,52 @@ log_warn() {
     echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
-# 创建目录结构
-log_step "创建目录结构..."
+# Create directory structure
+log_step "Creating directory structure..."
 mkdir -p "$RAW_DATA_DIR"
 mkdir -p "$OUTPUT_DIR"
 
-# 下载LLM-JP数据（如果尚未存在）
-log_step "检查和下载 LLM-JP 日语 Wikipedia 数据..."
+# Download LLM-JP data (if not already exists)
+log_step "Checking and downloading LLM-JP Japanese Wikipedia data..."
 cd "$RAW_DATA_DIR"
 
-# 下载训练数据文件（0-13）
+# Download training data files (0-13)
 for i in {0..13}; do
     if [[ ! -f "train_${i}.jsonl" ]]; then
-        log_info "下载 train_${i}.jsonl.gz..."
+        log_info "Downloading train_${i}.jsonl.gz..."
         wget -O "train_${i}.jsonl.gz" --no-check-certificate \
             "https://gitlab.llm-jp.nii.ac.jp/datasets/llm-jp-corpus-v3/-/raw/main/ja/ja_wiki/train_${i}.jsonl.gz?ref_type=heads"
         gunzip "train_${i}.jsonl.gz"
     else
-        log_info "train_${i}.jsonl 已存在，跳过下载"
+        log_info "train_${i}.jsonl already exists, skipping download"
     fi
 done
 
-# 下载验证数据
+# Download validation data
 if [[ ! -f "validation_0.jsonl" ]]; then
-    log_info "下载 validation_0.jsonl.gz..."
+    log_info "Downloading validation_0.jsonl.gz..."
     wget -O "validation_0.jsonl.gz" --no-check-certificate \
         "https://gitlab.llm-jp.nii.ac.jp/datasets/llm-jp-corpus-v3/-/raw/main/ja/ja_wiki/validation_0.jsonl.gz?ref_type=heads"
     gunzip "validation_0.jsonl.gz"
 else
-    log_info "validation_0.jsonl 已存在，跳过下载"
+    log_info "validation_0.jsonl already exists, skipping download"
 fi
 
-# 合并所有训练文件
-log_step "合并所有训练数据文件..."
+# Merge all training files
+log_step "Merging all training data files..."
 if [[ ! -f "train_merged.jsonl" ]]; then
-    log_info "合并 train_0.jsonl 到 train_13.jsonl..."
+    log_info "Merging train_0.jsonl to train_13.jsonl..."
     cat train_{0..13}.jsonl > train_merged.jsonl
-    log_info "✅ 训练数据合并完成: $(wc -l train_merged.jsonl | cut -d' ' -f1) 行"
+    log_info "✅ Training data merge completed: $(wc -l train_merged.jsonl | cut -d' ' -f1) lines"
 else
-    log_info "train_merged.jsonl 已存在，跳过合并"
+    log_info "train_merged.jsonl already exists, skipping merge"
 fi
 
-# 使用NeMo预处理脚本处理数据
-log_step "使用 NeMo 预处理脚本处理数据..."
+# Use NeMo preprocessing script to process data
+log_step "Processing data using NeMo preprocessing script..."
 
-# 处理训练数据
-log_info "处理合并后的训练数据..."
+# Process training data
+log_info "Processing merged training data..."
 python /opt/NeMo/scripts/nlp_language_modeling/preprocess_data_for_megatron.py \
     --input="${RAW_DATA_DIR}/train_merged.jsonl" \
     --json-keys=text \
@@ -84,8 +84,8 @@ python /opt/NeMo/scripts/nlp_language_modeling/preprocess_data_for_megatron.py \
     --output-prefix="${OUTPUT_DIR}/ja_wiki_train" \
     --workers=4
 
-# 处理验证数据
-log_info "处理验证数据..."
+# Process validation data
+log_info "Processing validation data..."
 python /opt/NeMo/scripts/nlp_language_modeling/preprocess_data_for_megatron.py \
     --input="${RAW_DATA_DIR}/validation_0.jsonl" \
     --json-keys=text \
@@ -96,39 +96,39 @@ python /opt/NeMo/scripts/nlp_language_modeling/preprocess_data_for_megatron.py \
     --output-prefix="${OUTPUT_DIR}/ja_wiki_val" \
     --workers=2
 
-# 验证输出文件
-log_step "验证输出文件..."
+# Verify output files
+log_step "Verifying output files..."
 if [[ -f "${OUTPUT_DIR}/ja_wiki_train_text_document.bin" && \
       -f "${OUTPUT_DIR}/ja_wiki_train_text_document.idx" && \
       -f "${OUTPUT_DIR}/ja_wiki_val_text_document.bin" && \
       -f "${OUTPUT_DIR}/ja_wiki_val_text_document.idx" ]]; then
-    log_info "✅ 数据处理完成！"
+    log_info "✅ Data processing completed!"
     
-    # 显示文件信息
+    # Display file information
     echo ""
-    echo "📁 生成的文件："
+    echo "📁 Generated files:"
     ls -lh "${OUTPUT_DIR}"/*.{bin,idx}
     
-    # 显示文件大小统计
+    # Display file size statistics
     echo ""
-    echo "📊 文件大小统计："
-    echo "训练数据: $(du -h ${OUTPUT_DIR}/ja_wiki_train_text_document.bin | cut -f1)"
-    echo "验证数据: $(du -h ${OUTPUT_DIR}/ja_wiki_val_text_document.bin | cut -f1)"
-    echo "总计: $(du -sh ${OUTPUT_DIR} | cut -f1)"
+    echo "📊 File size statistics:"
+    echo "Training data: $(du -h ${OUTPUT_DIR}/ja_wiki_train_text_document.bin | cut -f1)"
+    echo "Validation data: $(du -h ${OUTPUT_DIR}/ja_wiki_val_text_document.bin | cut -f1)"
+    echo "Total: $(du -sh ${OUTPUT_DIR} | cut -f1)"
     
-    # 显示数据集统计
+    # Display dataset statistics
     echo ""
-    echo "📈 数据集统计："
-    echo "原始训练行数: $(wc -l ${RAW_DATA_DIR}/train_merged.jsonl | cut -d' ' -f1)"
-    echo "原始验证行数: $(wc -l ${RAW_DATA_DIR}/validation_0.jsonl | cut -d' ' -f1)"
+    echo "📈 Dataset statistics:"
+    echo "Original training lines: $(wc -l ${RAW_DATA_DIR}/train_merged.jsonl | cut -d' ' -f1)"
+    echo "Original validation lines: $(wc -l ${RAW_DATA_DIR}/validation_0.jsonl | cut -d' ' -f1)"
 else
-    echo "❌ 数据处理失败，输出文件不完整"
-    echo "检查文件："
+    echo "❌ Data processing failed, output files are incomplete"
+    echo "Check files:"
     ls -la "${OUTPUT_DIR}/"
     exit 1
 fi
 
-log_info "🎉 LLM-JP 数据处理成功完成！"
-log_info "数据位置: ${OUTPUT_DIR}"
+log_info "🎉 LLM-JP data processing successfully completed!"
+log_info "Data location: ${OUTPUT_DIR}"
 echo ""
-echo "🚀 下一步：您可以开始任务7 - 实现PEFT-LoRA微调脚本"
+echo "🚀 Next step: You can start Task 7 - Implement PEFT-LoRA fine-tuning script"
