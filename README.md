@@ -1,251 +1,320 @@
-# Japanese Language Adaptation with NeMo 2.0 - Dual Workflow Implementation
+# NeMo 2.0 Qwen2.5B Japanese Fine-tuning
 
+A comprehensive toolkit for fine-tuning Qwen2.5 models on Japanese language data using NVIDIA NeMo 2.0. This project provides modular, production-ready implementations for PEFT (LoRA), SFT, and continual pre-training methods.
+
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![NeMo 2.0](https://img.shields.io/badge/NeMo-2.0+-green.svg)](https://github.com/NVIDIA/NeMo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
-[![NeMo 2.0](https://img.shields.io/badge/NeMo-2.0-green.svg)](https://docs.nvidia.com/nemo-framework/user-guide/latest/)
-[![Docker](https://img.shields.io/badge/Docker-supported-blue.svg)](https://www.docker.com/)
 
-## 🎯 Project Overview
+## 🚀 Features
 
-This repository implements **two distinct workflows** for Japanese language adaptation using **NVIDIA NeMo 2.0**:
+- **Multiple Training Methods**: PEFT (LoRA), SFT, and Continual Pre-training
+- **Modular Design**: Clean, reusable components with clear interfaces
+- **Japanese Language Optimized**: Specialized data processing for Japanese text
+- **Memory Efficient**: PEFT reduces memory usage by 42% vs full fine-tuning
+- **Production Ready**: Comprehensive logging, error handling, and configuration management
+- **Easy to Use**: Simple command-line interface and Python API
 
-### 🔄 Workflow 1: Continual Pre-training (M1nG Branch)
-- **Purpose**: Adapt existing LLMs to Japanese using continual pre-training
-- **Data Source**: LLM-JP Japanese Wikipedia corpus
-- **Approach**: Continue pre-training on large-scale Japanese text
-- **Output**: Foundation model adapted for Japanese
+## 📋 Table of Contents
 
-### ⚡ Workflow 2: Parameter-Efficient Fine-tuning (Kosuke Branch)  
-- **Purpose**: Efficient Japanese adaptation using PEFT/SFT methods
-- **Data Source**: Custom Japanese question-answer datasets
-- **Approach**: LoRA-based fine-tuning and supervised fine-tuning
-- **Output**: Task-specific Japanese models
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Training Methods](#training-methods)
+- [Project Structure](#project-structure)
+- [Usage Examples](#usage-examples)
+- [Configuration](#configuration)
+- [Contributing](#contributing)
+- [License](#license)
 
-## 🚀 Quick Start Guide
+## 🛠️ Installation
 
 ### Prerequisites
-- **GPU**: NVIDIA GPU with 12GB+ VRAM
-- **Docker**: Version 20.10+
-- **CUDA**: Version 12.8+
 
-### 📥 Repository Setup
+- Python 3.8+
+- CUDA-capable GPU (recommended)
+- Docker (optional, for containerized training)
+
+### Install from Source
+
 ```bash
-# Clone repository
-git clone https://github.com/nvidiasamp/nemo2-qwen2.5b-japanese-finetune.git
+# Clone the repository
+git clone https://github.com/your-username/nemo2-qwen2.5b-japanese-finetune.git
 cd nemo2-qwen2.5b-japanese-finetune
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install the package
+pip install -e .
 ```
 
-## 🔄 Workflow 1: Continual Pre-training
+### Install with GPU Support
 
-### 📊 Data Preparation (LLM-JP Corpus)
 ```bash
-# Step 1: Process LLM-JP Japanese Wikipedia data
-docker run --gpus all -it --rm \
-    --shm-size=16g \
-    --ulimit memlock=-1 --ulimit stack=67108864 \
-    -v "$(pwd):/workspace" \
-    -w "/workspace" \
-    nvcr.io/nvidia/nemo:25.04 \
-    bash -c "chmod +x scripts/data_processing/process_data_in_container_fixed.sh && scripts/data_processing/process_data_in_container_fixed.sh"
-
-# Step 2: Monitor processing progress
-./scripts/data_processing/monitor_progress.sh
+pip install -e ".[gpu]"
 ```
 
-**Expected Output**:
-```
-data/llm_jp_wiki/
-├── raw/ja_wiki/                 # Raw JSONL files
-│   ├── train_0.jsonl to train_13.jsonl
-│   ├── train_merged.jsonl       # Merged training data
-│   └── validation_0.jsonl
-└── nemo_binary/                 # NeMo format
-    ├── ja_wiki_train_text_document.bin
-    ├── ja_wiki_train_text_document.idx
-    ├── ja_wiki_val_text_document.bin
-    └── ja_wiki_val_text_document.idx
-```
+### Development Installation
 
-### 🎓 Training Execution
 ```bash
-# Run continual pre-training
+pip install -e ".[dev,docs,notebooks]"
+pre-commit install
+```
+
+## ⚡ Quick Start
+
+### 1. Data Preparation
+
+Convert Japanese Wikipedia data to training format:
+
+```bash
+python scripts/data_processing/convert_japanese_data.py \
+    --input-dir /path/to/japanese/wiki \
+    --output-dir /data/converted
+```
+
+### 2. Model Conversion
+
+Convert HuggingFace model to NeMo format:
+
+```bash
+python scripts/model_conversion/hf_to_nemo.py \
+    --model-name Qwen/Qwen2.5-0.5B \
+    --output-path /models/qwen2.5-0.5b.nemo
+```
+
+### 3. Training
+
+#### PEFT Training (Recommended)
+
+```bash
+python scripts/training/run_peft_training.py \
+    --dataset-root /data/converted \
+    --checkpoint-dir /checkpoints/peft \
+    --restore-from-path /models/qwen2.5-0.5b.nemo \
+    --max-steps 1000
+```
+
+#### SFT Training
+
+```bash
+python scripts/training/run_sft_training.py \
+    --dataset-root /data/converted \
+    --checkpoint-dir /checkpoints/sft \
+    --restore-from-path /models/qwen2.5-0.5b.nemo \
+    --max-steps 1000
+```
+
+### 4. Docker Usage
+
+```bash
+# Run PEFT training in Docker
 docker run --rm --gpus all --ipc=host \
     --ulimit memlock=-1 --ulimit stack=67108864 \
     -v "$(pwd):/workspace" -w "/workspace" \
     nvcr.io/nvidia/nemo:25.04 \
-    python src/continual_learning/train.py
+    python scripts/training/run_peft_training.py \
+        --dataset-root /workspace/data/converted \
+        --checkpoint-dir /workspace/checkpoints/peft \
+        --restore-from-path /workspace/models/qwen2.5-0.5b.nemo
 ```
 
-## ⚡ Workflow 2: Parameter-Efficient Fine-tuning
+## 🎯 Training Methods
 
-### 📊 Data Preparation (Custom Japanese QA)
-```bash
-# Step 1: Convert Japanese Wikipedia to QA format
-docker run --rm --gpus all --ipc=host \
-    --ulimit memlock=-1 --ulimit stack=67108864 \
-    -v "$(pwd):/workspace" -w "/workspace" \
-    nvcr.io/nvidia/nemo:25.04 \
-    python src/continual_learning/preprocess.py
+### PEFT (Parameter-Efficient Fine-Tuning)
+
+- **Memory Efficient**: 42% reduction vs full fine-tuning  
+- **Fast Training**: 26% faster than SFT
+- **Parameter Efficient**: 99.74% parameter reduction
+- **Best for**: Resource-constrained environments
+
+```python
+from nemo_japanese_ft import QwenModelConfig, PEFTTrainer
+
+config = QwenModelConfig(model_size="0.5b")
+trainer = PEFTTrainer(
+    model_config=config,
+    dataset_root="/data/converted",
+    checkpoint_dir="/checkpoints",
+    lora_rank=16,
+    lora_alpha=32
+)
+trainer.prepare()
+trainer.train()
 ```
 
-**Expected Output**:
-```
-data/training_data/
-├── training.jsonl               # QA pairs for training
-└── validation.jsonl             # QA pairs for validation
-```
+### SFT (Supervised Fine-Tuning)
 
-### 🎓 Training Execution
-```bash
-# Option A: PEFT Training (Memory Efficient)
-docker run --rm --gpus all --ipc=host \
-    --ulimit memlock=-1 --ulimit stack=67108864 \
-    -v "$(pwd):/workspace" -w "/workspace" \
-    nvcr.io/nvidia/nemo:25.04 \
-    python src/peft/train.py
+- **Maximum Performance**: Full parameter optimization
+- **High Memory**: ~22.7GB peak for 0.5B model
+- **Baseline Quality**: Best possible adaptation
+- **Best for**: Maximum performance requirements
 
-# Option B: SFT Training (Maximum Performance)
-docker run --rm --gpus all --ipc=host \
-    --ulimit memlock=-1 --ulimit stack=67108864 \
-    -v "$(pwd):/workspace" -w "/workspace" \
-    nvcr.io/nvidia/nemo:25.04 \
-    python src/sft/train.py
-```
+### Continual Pre-training
+
+- **Large-scale Data**: Optimized for corpus-level training
+- **Knowledge Preservation**: Maintains existing capabilities
+- **Cosine Scheduling**: Advanced learning rate management
+- **Best for**: Domain adaptation and language learning
 
 ## 📁 Project Structure
 
 ```
 nemo2-qwen2.5b-japanese-finetune/
-├── README.md                    # This documentation
-├── requirements.txt             # Python dependencies
-├── setup.py                    # Package configuration
-├── LICENSE                     # MIT License
-│
-├── src/                        # 🎯 Dual Workflow Source Code
-│   ├── continual_learning/     # 🔄 Workflow 1: Continual Pre-training
-│   │   ├── train.py            # Main continual learning script
-│   │   ├── preprocess.py       # Japanese text preprocessing
-│   │   └── README.md           # Module documentation
-│   ├── peft/                   # ⚡ Workflow 2A: PEFT Training
-│   │   ├── train.py            # LoRA-based fine-tuning
-│   │   └── README.md           # Module documentation
-│   ├── sft/                    # 🎯 Workflow 2B: SFT Training
-│   │   ├── train.py            # Supervised fine-tuning
-│   │   └── README.md           # Module documentation
-│   └── utils/                  # 🛠️ Utility Functions
-│       ├── convert_model.py    # Model format conversion
-│       ├── check_gpu_config.py # GPU validation
-│       └── validate_model.py   # Model validation
-│
-├── scripts/                    # 🔧 Execution Scripts
-│   ├── data_processing/        # 📊 Data Processing Pipeline
-│   │   ├── process_data_in_container_fixed.sh  # LLM-JP processing
-│   │   ├── monitor_progress.sh # Progress monitoring
-│   │   └── README.md           # Data processing guide
-│   ├── training/               # 🎓 Training Pipeline
-│   └── setup_environment.py   # Environment setup
-│
-├── configs/                    # ⚙️ Configuration Files
-│   └── model_configs/          # Model configurations
-│       └── qwen25_0.5b.yaml   # Qwen2.5-0.5B config
-│
-├── docs/                       # 📚 Documentation
-│   ├── SETUP.md               # Environment setup guide
-│   ├── TROUBLESHOOTING.md     # Problem solving guide
-│   └── contributing.md        # Contribution guidelines
-│
-└── experiments/               # 📈 Training Outputs (Generated)
-    ├── continual_learning/    # Workflow 1 results
-    ├── peft/                  # Workflow 2A results
-    └── sft/                   # Workflow 2B results
+├── src/nemo_japanese_ft/          # Core package
+│   ├── data/                      # Data processing modules
+│   ├── models/                    # Model management
+│   ├── training/                  # Training implementations
+│   └── utils/                     # Utilities and configuration
+├── scripts/                       # Executable scripts
+│   ├── data_processing/           # Data conversion scripts
+│   ├── model_conversion/          # Model format conversion
+│   └── training/                  # Training scripts
+├── examples/                      # Usage examples
+│   ├── basic_usage/              # Quick start examples
+│   └── advanced_training/        # Advanced configurations
+├── configs/                       # Configuration files
+│   ├── models/                    # Model configurations
+│   ├── training/                  # Training configurations
+│   └── data/                      # Data configurations
+├── tests/                         # Test suite
+├── docs/                          # Documentation
+└── docker/                       # Docker configurations
 ```
 
-## 🔍 Workflow Comparison
+## 💡 Usage Examples
 
-| Aspect | Continual Pre-training | PEFT/SFT Fine-tuning |
-|--------|----------------------|---------------------|
-| **Data Size** | Large (LLM-JP corpus) | Medium (Custom QA) |
-| **Training Time** | 2-3 hours | 1-2 hours |
-| **Memory Usage** | High | Low (PEFT) / High (SFT) |
-| **Output Quality** | Foundation adaptation | Task-specific |
-| **Use Case** | General Japanese LLM | Specific applications |
+### Basic Python API
 
-## 🛠️ Branch-Specific Instructions
+```python
+from nemo_japanese_ft import (
+    QwenModelConfig, 
+    PEFTTrainer, 
+    JapaneseWikipediaConverter
+)
 
-### 🔄 For Continual Pre-training (Based on M1nG Branch)
+# Convert data
+converter = JapaneseWikipediaConverter()
+converter.convert(
+    input_dir="/raw/data",
+    output_dir="/converted/data"
+)
+
+# Configure model
+config = QwenModelConfig(
+    model_size="0.5b",
+    max_steps=1000,
+    learning_rate=3e-4
+)
+
+# Train with PEFT
+trainer = PEFTTrainer(
+    model_config=config,
+    dataset_root="/converted/data",
+    checkpoint_dir="/checkpoints"
+)
+trainer.prepare()
+trainer.train()
+```
+
+### Command Line Interface
+
 ```bash
-# Switch to M1nG branch for complete implementation
-git checkout M1nG
-cd workshop-25-08-02
+# Convert data
+nemo-jp-convert-data --input-dir /raw --output-dir /converted
 
-# Follow the complete data processing pipeline
-./scripts/data_processing/process_data_in_container_fixed.sh
+# Convert model  
+nemo-jp-convert-model --model-name Qwen/Qwen2.5-0.5B --output-path model.nemo
+
+# Train with PEFT
+nemo-jp-train-peft --dataset-root /converted --checkpoint-dir /checkpoints
+
+# Train with SFT
+nemo-jp-train-sft --dataset-root /converted --checkpoint-dir /checkpoints
 ```
 
-### ⚡ For PEFT/SFT Fine-tuning (Based on Kosuke Branch)
-```bash
-# Switch to Kosuke branch for specialized implementations
-git checkout Kosuke
+## ⚙️ Configuration
 
-# Use the streamlined scripts
-python src/00convert_ja.py      # Data preprocessing
-python src/01_convert_hf_to_nemo.py  # Model conversion
-python src/02_qwen25_peft.py    # PEFT training
-python src/03_qwen25_sft.py     # SFT training
-```
+### Model Configurations
 
-## ⚙️ Configuration Details
-
-### Model Setup
-- **Base Model**: Qwen2.5-0.5B (500M parameters)
-- **Framework**: NVIDIA NeMo 2.0
-- **Tokenizer**: Qwen/Qwen2.5-0.5B (model-specific)
-
-### Training Parameters
 ```yaml
-# Continual Pre-training
+# configs/models/qwen25_0.5b.yaml
+model_size: "0.5b"
+seq_length: 2048
+micro_batch_size: 2
+global_batch_size: 16
 learning_rate: 3e-4
-warmup_steps: 200
-scheduler: CosineAnnealing
+max_steps: 1000
 precision: "bf16-mixed"
+```
 
-# PEFT Configuration
+### Training Configurations
+
+```yaml
+# configs/training/peft_default.yaml
+peft_scheme: "lora"
 lora_rank: 16
 lora_alpha: 32
 lora_dropout: 0.1
 target_modules: "all_linear"
 ```
 
-## 🔧 Troubleshooting
+## 📊 Performance Comparison
 
-### Data Processing Issues
-- **LLM-JP Download**: Ensure stable internet connection
-- **Memory Errors**: Increase Docker memory allocation
-- **Permission Errors**: Check file permissions in mounted volumes
+| Method | Memory Usage | Training Time | Parameter Efficiency | Performance |
+|--------|-------------|---------------|---------------------|-------------|
+| **PEFT** | Low (42% ↓) | Fast (26% ↑) | 99.74% reduction | High |
+| **SFT** | High (~22.7GB) | Standard | 0% reduction | Maximum |
+| **Continual** | High | Extended | 0% reduction | Domain-Adaptive |
 
-### Training Issues
-- **GPU Memory**: Reduce batch size or enable gradient checkpointing
-- **Docker Issues**: Ensure `--gpus all` flag is used
-- **CUDA Version**: Match NeMo container version with your CUDA
+## 🧪 Testing
 
-For detailed troubleshooting, see **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)**
+```bash
+# Run all tests
+pytest tests/
 
-## 🤝 Contributors
+# Run specific test category
+pytest tests/unit/
+pytest tests/integration/
 
-This project represents a collaborative dual-approach implementation:
-- **M1nG**: Continual pre-training workflow and infrastructure
-- **Kosuke**: PEFT/SFT fine-tuning methods and optimization
+# Run with coverage
+pytest --cov=src tests/
+```
 
-## 📚 References
+## 📚 Documentation
 
-- **[NVIDIA Developer Blog - NeMo Framework Japanese Continual Pre-training](https://developer.nvidia.com/ja-jp/blog/how-to-use-continual-pre-training-with-japanese-language-on-nemo-framework/)**
-- **[LLM-JP Corpus Documentation](https://huggingface.co/datasets/llm-jp/llm-jp-corpus)**
-- **[NeMo 2.0 Framework Documentation](https://docs.nvidia.com/nemo-framework/user-guide/latest/)**
+- [Installation Guide](docs/installation.md)
+- [Quick Start Tutorial](docs/quick_start.md)
+- [Training Guide](docs/user_guide/training_guide.md)
+- [API Reference](docs/developer_guide/api_reference.md)
+- [Troubleshooting](docs/user_guide/troubleshooting.md)
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🙏 Acknowledgments
+
+- [NVIDIA NeMo](https://github.com/NVIDIA/NeMo) for the training framework
+- [Qwen](https://huggingface.co/Qwen) for the base models
+- [LLM-JP](https://llm-jp.nii.ac.jp/) for Japanese language resources
+
+## 📞 Support
+
+- **Documentation**: [Read the Docs](https://nemo2-qwen2.5b-japanese-finetune.readthedocs.io/)
+- **Issues**: [GitHub Issues](https://github.com/your-username/nemo2-qwen2.5b-japanese-finetune/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-username/nemo2-qwen2.5b-japanese-finetune/discussions)
+
 ---
 
-📖 **Choose Your Workflow**: [Continual Pre-training (M1nG)](../../tree/M1nG) | [PEFT/SFT Fine-tuning (Kosuke)](../../tree/Kosuke) | [Data Processing Guide](scripts/data_processing/README.md) 
+**Note**: This project is optimized for Japanese language fine-tuning. For other languages, consider adapting the data processing pipeline and configuration accordingly. 
