@@ -1,54 +1,57 @@
-# NeMo 2.0 Qwen2.5-0.5B Model Configuration
-# 使用直接的HuggingFace模型ID（现代化做法）
+# Use direct HuggingFace model ID (modern approach)
+# NeMo 2.0 Model Configuration for Qwen2.5-0.5B
+# Author: M1nG & Kosuke
+# Date: 2025-07-29
+# Updated: Using hf:// protocol for direct model loading
 
+# Model specifications
 model:
-  name: "qwen25_0.5b"
-  type: "Qwen2Model"
-  config: "Qwen25Config500M"
-  
-  # 模型规格
-  hidden_size: 896
-  num_layers: 24
-  num_attention_heads: 14
-  vocab_size: 151936
-  seq_length: 32768
-  
-  # 直接使用HF模型ID (现代化做法 - 无需本地转换)
-  model_id: "hf://Qwen/Qwen2.5-0.5B"
-  
-  # 训练/推理配置中的路径设置
-  restore_config:
-    path: "hf://Qwen/Qwen2.5-0.5B"
-    
-  # 文件结构（仅供参考，实际从HF自动解析）
-  structure:
-    context_dir: "context/"
-    weights_dir: "weights/"
-    tokenizer_dir: "context/nemo_tokenizer/"
-    
-training:
-  # 训练相关配置
-  global_batch_size: 64
-  micro_batch_size: 4
-  seq_length: 2048
-  
-  # 优化器配置
-  learning_rate: 1e-4
-  weight_decay: 0.01
-  
-  # 训练策略
-  precision: "bf16-mixed"
-  gradient_clipping: 1.0
-  
-  # 模型配置
-  resume:
-    restore_config:
-      path: "hf://Qwen/Qwen2.5-0.5B"  # 直接使用HF模型ID
+  _target_: nemo.collections.llm.Qwen2Model
+  config:
+    hidden_size: 896
+    num_layers: 24
+    num_attention_heads: 14
 
-# 优势说明
+# Use HF model ID directly (modern approach - no local conversion needed)
+model_path: "hf://Qwen/Qwen2.5-0.5B"
+
+# Path settings in training/inference configuration
+data:
+  train_path: "data/llm_jp_wiki/nemo_binary/ja_wiki_train_text_document"
+  validation_path: "data/llm_jp_wiki/nemo_binary/ja_wiki_val_text_document"
+
+# File structure (for reference only, automatically parsed from HF)
+tokenizer:
+  _target_: transformers.AutoTokenizer
+  pretrained_model_name_or_path: "Qwen/Qwen2.5-0.5B"
+  trust_remote_code: true
+
+# Training related configuration
+trainer:
+  num_nodes: 1
+  devices: 1
+  max_steps: 1000
+
+# Optimizer configuration
+optim:
+  lr: 3e-4
+  weight_decay: 0.1
+
+# Training strategy
+training:
+  precision: "bf16-mixed"
+
+# Model configuration
+restore:
+  path: "hf://Qwen/Qwen2.5-0.5B"  # Use HF model ID directly
+
+# Advantages explanation
 advantages:
-  - "节省本地存储空间（2.4GB）"
-  - "自动获取最新模型版本"
-  - "简化部署流程"
-  - "减少维护成本"
-  - "符合现代ML框架做法" 
+  - "Save local storage space (2.4GB)"
+  - "Automatically get latest model version"
+  - "Simplified deployment process"
+  - "Reduced maintenance cost"
+  - "Aligns with modern ML framework practices"
+
+# Important note
+note: "This configuration uses the modern hf:// protocol for direct model loading from HuggingFace Hub, eliminating the need for manual import_ckpt conversion steps." 

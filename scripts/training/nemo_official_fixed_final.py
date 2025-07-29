@@ -2,10 +2,10 @@
 # scripts/training/nemo_official_fixed_final.py
 
 """
-NeMo Framework 修复版本 - 解决checkpoint冲突和学习率问题
-- 修复学习率过小问题 (1e-5 → 3e-4)
-- 解决checkpoint恢复冲突
-- 可选择重新开始训练
+NeMo Framework Fixed Version - Resolve checkpoint conflicts and learning rate issues
+- Fix learning rate too small issue (1e-5 → 3e-4)
+- Resolve checkpoint recovery conflicts
+- Option to restart training from scratch
 """
 
 import logging
@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 import argparse
 
-# 添加项目根目录到Python路径
+# Add project root directory to Python path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -23,7 +23,7 @@ from nemo import lightning as nl
 from nemo.collections import llm
 from nemo.collections.llm.recipes.precision.mixed_precision import bf16_mixed
 
-# 设置日志
+# Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -31,7 +31,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def validate_data_files():
-    """验证训练数据文件是否存在"""
+    """Validate that training data files exist"""
     required_files = [
         "data/llm_jp_wiki/nemo_binary/ja_wiki_train_text_document.bin",
         "data/llm_jp_wiki/nemo_binary/ja_wiki_val_text_document.bin",
