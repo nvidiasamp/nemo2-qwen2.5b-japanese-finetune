@@ -5,7 +5,7 @@
 Based on the successful methods validated by users in NeMo 1.0, adapted for NeMo 2.0 data processing workflow. Using Docker container environment to ensure consistency and reproducibility.
 
 ### Core Improvements
-- **Tokenizer Adaptation**: Changed from `Llama-3.1-8B` to `Qwen/Qwen2.5-0.5B`
+- **Model Adaptation**: Changed from `Llama-3.1-8B` to `Qwen/Qwen2.5-0.5B` model
 - **Containerized Processing**: Based on NeMo 25.04 container environment
 - **Smart Merging**: Automatically merge training files to avoid path issues
 - **Real-time Monitoring**: Provides progress tracking tools
@@ -57,17 +57,17 @@ watch -n 30 ./scripts/data_processing/monitor_progress.sh
 ### File Structure
 ```
 data/llm_jp_wiki/
-├── raw/ja_wiki/                    # Raw data (12GB)
+├── raw/ja_wiki/                    # Raw data
 │   ├── train_0.jsonl
 │   ├── train_1.jsonl
 │   ├── ...
 │   ├── train_13.jsonl
-│   ├── train_merged.jsonl          # Merged training file (6GB)
+│   ├── train_merged.jsonl          # Merged training file
 │   └── validation_0.jsonl
 └── nemo_binary/                    # NeMo format data
-    ├── ja_wiki_train_text_document.bin    (~500-800MB)
+    ├── ja_wiki_train_text_document.bin
     ├── ja_wiki_train_text_document.idx
-    ├── ja_wiki_val_text_document.bin      (~10-20MB)
+    ├── ja_wiki_val_text_document.bin
     └── ja_wiki_val_text_document.idx
 ```
 
@@ -79,20 +79,22 @@ data/llm_jp_wiki/
 
 ### Technical Configuration
 - **Container**: nvcr.io/nvidia/nemo:25.04
-- **Tokenizer**: Qwen/Qwen2.5-0.5B
+- **Tokenizer**: Qwen/Qwen2.5-0.5B (Model-specific tokenizer)
 - **Output Format**: mmap (.bin/.idx)
 - **Worker Threads**: 4 for training data, 2 for validation data
 
-## NeMo 1.0 Compatibility
+## Model Configuration Difference
 
-This method is 100% based on the successful workflow validated by users in NeMo 1.0, requiring only one key adjustment:
+This method adapts the proven LLM-JP data processing workflow for the Qwen2.5-0.5B model, requiring only one key adjustment:
 
 ```bash
-# Only change needed
---tokenizer-type="meta-llama/Llama-3.1-8B"  # NeMo 1.0
+# Model-specific tokenizer change (not NeMo version difference)
+--tokenizer-type="meta-llama/Llama-3.1-8B"  # For Llama models
 ↓
---tokenizer-type="Qwen/Qwen2.5-0.5B"        # NeMo 2.0 adaptation
+--tokenizer-type="Qwen/Qwen2.5-0.5B"        # For Qwen2.5 models
 ```
+
+**Important Note**: This is a model architecture difference, not a NeMo Framework version difference. Both configurations work in NeMo 2.0, depending on which model you're using.
 
 ## Troubleshooting
 
@@ -131,15 +133,13 @@ After successful processing completion, you will see:
 ✅ Data processing completed!
 
 📁 Generated files:
-ja_wiki_train_text_document.bin - 512M
-ja_wiki_train_text_document.idx - 4.0K
-ja_wiki_val_text_document.bin - 15M
-ja_wiki_val_text_document.idx - 1.0K
+ja_wiki_train_text_document.bin
+ja_wiki_train_text_document.idx
+ja_wiki_val_text_document.bin
+ja_wiki_val_text_document.idx
 
 📊 File size statistics:
-Training data: 512M
-Validation data: 15M
-Total: 527M
+[Actual sizes will be displayed here]
 
 🚀 Next step: You can start Task 7 - Implement PEFT-LoRA fine-tuning script
 ```
@@ -161,3 +161,5 @@ data:
 ---
 
 **Project Status**: This data processing workflow is based on methods validated by users in production environment, ensuring high reliability and stability.
+
+**Reference**: Based on [NVIDIA Developer Blog - NeMo Framework で実践する継続事前学習](https://developer.nvidia.com/ja-jp/blog/how-to-use-continual-pre-training-with-japanese-language-on-nemo-framework/)

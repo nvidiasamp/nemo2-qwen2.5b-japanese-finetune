@@ -1,7 +1,5 @@
-# Use direct HuggingFace model ID (modern approach)
-# NeMo 2.0 Model Configuration for Qwen2.5-0.5B
-# Author: M1nG & Kosuke
-# Date: 2025-07-29
+# Qwen2.5-0.5B Model Configuration for NeMo 2.0
+# Model-specific configuration (not NeMo version specific)
 # Updated: Using hf:// protocol for direct model loading
 
 # Model specifications
@@ -45,6 +43,13 @@ training:
 restore:
   path: "hf://Qwen/Qwen2.5-0.5B"  # Use HF model ID directly
 
+# Model vs Framework difference
+tokenizer_note: |
+  This configuration uses Qwen/Qwen2.5-0.5B tokenizer.
+  For Llama models, use "meta-llama/Llama-3.1-8B" instead.
+  This is a MODEL difference, not a NeMo Framework version difference.
+  Both work in NeMo 2.0 depending on which model architecture you choose.
+
 # Advantages explanation
 advantages:
   - "Save local storage space (2.4GB)"
@@ -54,4 +59,7 @@ advantages:
   - "Aligns with modern ML framework practices"
 
 # Important note
-note: "This configuration uses the modern hf:// protocol for direct model loading from HuggingFace Hub, eliminating the need for manual import_ckpt conversion steps." 
+note: "This configuration uses the modern hf:// protocol for direct model loading from HuggingFace Hub, eliminating the need for manual import_ckpt conversion steps."
+
+# Reference
+reference: "Based on NVIDIA NeMo Framework Japanese continual pre-training guide: https://developer.nvidia.com/ja-jp/blog/how-to-use-continual-pre-training-with-japanese-language-on-nemo-framework/" 
