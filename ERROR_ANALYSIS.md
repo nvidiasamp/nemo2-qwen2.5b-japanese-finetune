@@ -82,7 +82,7 @@ def prepare_data(self) -> None:
 - `workflows/kosuke_peft_sft/02_qwen25_peft.py`: -12 lines
 - `workflows/kosuke_peft_sft/03_qwen25_sft.py`: -12 lines
 
-**Git Commit:** f0c3703 - "Fix redundant symlink creation logic in workflow files"
+**Git Commit:** f0c3703290324a3b643c6996ce021add8dae30e8 - "Fix redundant symlink creation logic in workflow files"
 
 ---
 
