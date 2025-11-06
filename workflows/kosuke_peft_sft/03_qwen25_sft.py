@@ -31,18 +31,6 @@ class CustomFineTuningDataModule(FineTuningDataModule):
         print(f"Found training data: {train_path}")
         print(f"Found validation data: {val_path}")
 
-        # ファイル名をNeMoが期待する形式にリネーム（必要に応じて）
-        training_jsonl = os.path.join(self.dataset_root, "training.jsonl")
-        validation_jsonl = os.path.join(self.dataset_root, "validation.jsonl")
-
-        if not os.path.exists(training_jsonl):
-            print(f"Creating symlink: {training_jsonl} -> {train_path}")
-            os.symlink(os.path.basename(train_path), training_jsonl)
-
-        if not os.path.exists(validation_jsonl):
-            print(f"Creating symlink: {validation_jsonl} -> {val_path}")
-            os.symlink(os.path.basename(val_path), validation_jsonl)
-
         super().prepare_data()
 
 def main():
