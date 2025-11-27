@@ -132,7 +132,15 @@ def main():
         default=0.1,
         help="LoRA dropout"
     )
-    
+
+    parser.add_argument(
+        "--precision",
+        type=str,
+        default="bf16-mixed",
+        choices=["bf16-mixed", "fp16-mixed", "32-true"],
+        help="Training precision"
+    )
+
     args = parser.parse_args()
     
     logger.info("=== PEFT Training Setup ===")
@@ -146,6 +154,7 @@ def main():
         learning_rate=args.learning_rate,
         max_steps=args.max_steps,
         val_check_interval=args.val_check_interval,
+        precision=args.precision,
     )
     
     # Create PEFT trainer

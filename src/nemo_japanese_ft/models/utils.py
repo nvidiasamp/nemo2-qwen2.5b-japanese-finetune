@@ -44,7 +44,9 @@ class ModelUtils:
         model = llm.Qwen2Model(model_config)
         
         # Ensure output directory exists
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        output_dir = os.path.dirname(output_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
         
         logger.info(f"Converting {model_name} to NeMo format...")
         logger.info(f"Output path: {output_path}")
