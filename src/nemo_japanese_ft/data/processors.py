@@ -51,18 +51,6 @@ class QADataProcessor(FineTuningDataModule):
         logger.info(f"Found training data: {train_path}")
         logger.info(f"Found validation data: {val_path}")
 
-        # Create symlinks if needed for NeMo expected format
-        training_jsonl = os.path.join(self.dataset_root, "training.jsonl")
-        validation_jsonl = os.path.join(self.dataset_root, "validation.jsonl")
-
-        if not os.path.exists(training_jsonl):
-            logger.info(f"Creating symlink: {training_jsonl} -> {train_path}")
-            os.symlink(os.path.basename(train_path), training_jsonl)
-
-        if not os.path.exists(validation_jsonl):
-            logger.info(f"Creating symlink: {validation_jsonl} -> {val_path}")
-            os.symlink(os.path.basename(val_path), validation_jsonl)
-
         super().prepare_data()
 
     def validate_data_format(self, file_path: str) -> bool:

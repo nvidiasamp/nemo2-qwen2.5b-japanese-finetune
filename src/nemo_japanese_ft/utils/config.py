@@ -81,7 +81,8 @@ class Config:
     
     def __contains__(self, key: str) -> bool:
         """Check if key exists."""
-        return self.get(key) is not None
+        _sentinel = object()
+        return self.get(key, _sentinel) is not _sentinel
 
 
 def load_config(config_path: str) -> Config:
